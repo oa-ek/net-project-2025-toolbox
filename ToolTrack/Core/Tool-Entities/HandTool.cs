@@ -8,7 +8,7 @@ namespace Core
 {
     public class HandTool
     {
-        public int id { get; set; }
+        public int Id { get; set; }
         public int BrandId { get; set; }
         public int ConditionId { get; set; }
         public int ToolTypeId { get; set; }

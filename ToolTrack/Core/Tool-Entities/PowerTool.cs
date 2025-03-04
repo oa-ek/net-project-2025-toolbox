@@ -2,7 +2,7 @@
 {
     public class PowerTool
     {
-        public int id { get; set; }
+        public int Id { get; set; }
         public int TypeId { get; set; }
         public int ConditionId { get; set; }
         public int LastWorkerId { get; set; }

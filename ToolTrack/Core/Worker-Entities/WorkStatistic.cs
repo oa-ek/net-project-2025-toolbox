@@ -16,6 +16,6 @@ namespace Core
         public bool Submiteed { get; set; }
 
         // navigation properties
-        public Worker Workers { get; set; }
+        public Worker Worker { get; set; }
     }
 }

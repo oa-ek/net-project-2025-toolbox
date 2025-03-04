@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Core
 {
@@ -15,20 +12,23 @@ namespace Core
         public string Phone { get; set; }
         public string Password { get; set; }
         public int LocationId { get; set; }
-        public int BryhadyrId { get; set; } // worker
+        public int BryhadyrId { get; set; } // FK до бригадира
         public int PositionId { get; set; }
         public int BossId { get; set; }
-        public double Latitute { get; set; }
-        public double Longitute { get; set; }
+        public double? Latitute { get; set; }
+        public double? Longitute { get; set; }
 
-        // navigation properties
+        // Навігаційні властивості (один об'єкт)
         public Location Location { get; set; }
         public Position Position { get; set; }
         public Boss Boss { get; set; }
-        public IEnumerable<WorkStatistic> WorkStatistics { get; set; }
-        public Worker Workers { get; set; } // bryhadyr
-        public IEnumerable<PowerTool> PowerTools { get; set; }
-        public IEnumerable<HandTool> HandTools { get; set; }
-        public IEnumerable<Batary> Batarys { get; set; }
+        public Worker Bryhadyr { get; set; } // Один бригадир
+
+        // Навігаційні властивості (колекції)
+        public ICollection<Worker> SubWorkers { get; set; } = new List<Worker>(); // Працівники, підлеглі бригадиру
+        public ICollection<WorkStatistic> WorkStatistics { get; set; } = new List<WorkStatistic>();
+        public ICollection<PowerTool> PowerTools { get; set; } = new List<PowerTool>();
+        public ICollection<HandTool> HandTools { get; set; } = new List<HandTool>();
+        public ICollection<Batary> Batarys { get; set; } = new List<Batary>();
     }
 }

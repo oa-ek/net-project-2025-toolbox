@@ -8,6 +8,7 @@ namespace Core
 {
     public class Position
     {
+        public int Id { get; set; }
         public string Name { get; set; }
         public int SalaryPerHour { get; set; } // UAN
         public int BossId { get; set; }
