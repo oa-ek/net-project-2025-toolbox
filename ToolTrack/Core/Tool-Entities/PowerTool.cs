@@ -8,7 +8,7 @@ namespace Core
         public int Id { get; set; }
         public int TypeId { get; set; }
         public int ConditionId { get; set; }
-        public int LastWorkerId { get; set; }
+        public int? LastWorkerId { get; set; }
         public int LastLocationId { get; set; }
         public int ToolModelId { get; set; }
         public bool HaveCase { get; set; }
