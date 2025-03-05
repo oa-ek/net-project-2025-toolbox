@@ -1,7 +1,10 @@
-﻿namespace Core
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Core
 {
     public class ToolType
     {
+        [Key]
         public int Id { get; set; }
         public string Name { get; set; }
 

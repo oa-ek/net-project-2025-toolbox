@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ namespace Core
 {
     public class Batary
     {
+        [Key]
         public int Id { get; set; }
         public int BataryModelId { get; set; }
         public DateOnly DateMade { get; set; }

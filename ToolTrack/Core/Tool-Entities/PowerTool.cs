@@ -1,7 +1,10 @@
-﻿namespace Core
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Core
 {
     public class PowerTool
     {
+        [Key]
         public int Id { get; set; }
         public int TypeId { get; set; }
         public int ConditionId { get; set; }
