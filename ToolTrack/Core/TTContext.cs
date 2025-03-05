@@ -20,11 +20,11 @@ namespace Core
         public DbSet<PowerTool> PowerTools { get; set; }
         public DbSet<HandTool> HandTools { get; set; }
         public DbSet<Batary> Bataries { get; set; }
- 
 
-/*        protected override void OnConfiguring(DbContextOptionsBuilder options)
+
+        protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
             options.UseSqlServer("Server=localhost,1433;Database=ToolTrackDB;User Id=sa;Password=ToolTrack123!;TrustServerCertificate=True;");
-        } */       
+        }
     }
 }

@@ -75,6 +75,9 @@ namespace ToolTrack.ManageUI.Controllers
         {
             if (id != batary.Id) return NotFound();
 
+            var existingBatary = await _bataryRepository.GetAsync(id);
+            if (existingBatary == null) return NotFound(); // Додаткова перевірка
+
             if (!ModelState.IsValid)
             {
                 await PopulateViewData();
@@ -84,6 +87,7 @@ namespace ToolTrack.ManageUI.Controllers
             await _bataryRepository.UpdateAsync(batary);
             return RedirectToAction(nameof(Index));
         }
+
 
         public async Task<IActionResult> Delete(int id)
         {
@@ -97,15 +101,20 @@ namespace ToolTrack.ManageUI.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var batary = await _bataryRepository.GetAsync(id);
+            if (batary == null) return NotFound(); // Додаткова перевірка
+
             await _bataryRepository.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
+
         private async Task PopulateViewData()
         {
-            ViewData["BataryModelId"] = new SelectList(await _bataryModelRepository.GetAsync(), "Id", "Name");
-            ViewData["ConditionId"] = new SelectList(await _conditionRepository.GetAsync(), "Id", "Name");
-            ViewData["LastWorkerId"] = new SelectList(await _workerRepository.GetAsync(), "Id", "Email");
+            ViewData["BataryModelId"] = new SelectList(await _bataryModelRepository.GetAsync() ?? new List<BataryModel>(), "Id", "Name");
+            ViewData["ConditionId"] = new SelectList(await _conditionRepository.GetAsync() ?? new List<Condition>(), "Id", "Name");
+            ViewData["LastWorkerId"] = new SelectList(await _workerRepository.GetAsync() ?? new List<Worker>(), "Id", "Email");
         }
+
     }
 }

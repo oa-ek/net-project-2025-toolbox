@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Core; // Додано для використання TTContext
+using System.Linq.Expressions;
 
 namespace ToolTrack.Repository
 {
@@ -17,12 +18,13 @@ namespace ToolTrack.Repository
         public BaseRepository(TTContext context)
         {
             _context = context;
-            _dbSet = context.Set<T>();
+            _dbSet = _context.Set<T>();
         }
 
         public async Task CreateAsync(T entity)
         {
             await _dbSet.AddAsync(entity);
+            await SaveChangesAsync();
         }
 
         public async Task<IEnumerable<T>> GetAsync()
@@ -43,7 +45,7 @@ namespace ToolTrack.Repository
 
         public async Task DeleteAsync(int id)
         {
-            var entity = await _dbSet.FindAsync(id);
+            var entity = await GetAsync(id);
             if (entity != null)
             {
                 _dbSet.Remove(entity);
@@ -55,5 +57,21 @@ namespace ToolTrack.Repository
         {
             await _context.SaveChangesAsync();
         }
+
+        public async Task AddRangeAsync(IEnumerable<T> entities)
+        {
+            await _dbSet.AddRangeAsync(entities);
+            await SaveChangesAsync();
+        }
+
+        public async Task<bool> AnyAsync()
+        {
+            return await _dbSet.AnyAsync();
+        }
+        public async Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbSet.FirstOrDefaultAsync(predicate);
+        }
     }
+
 }
