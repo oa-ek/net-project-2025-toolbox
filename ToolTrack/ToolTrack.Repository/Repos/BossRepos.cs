@@ -10,7 +10,7 @@ namespace ToolTrack.Repository.Repos
 {
     public class BossRepository : BaseRepository<Boss>
     {
-        public BossRepository(DbContext context) : base(context) { }
+        public BossRepository(TTContext context) : base(context) { }
     }
 
 }

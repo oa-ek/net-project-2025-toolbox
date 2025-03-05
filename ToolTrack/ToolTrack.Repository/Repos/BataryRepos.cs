@@ -10,6 +10,6 @@ namespace ToolTrack.Repository.Repos
 {
     public class BataryRepository : BaseRepository<Batary>
     {
-        public BataryRepository(DbContext context) : base(context) { }
+        public BataryRepository(TTContext context) : base(context) { }
     }
 }

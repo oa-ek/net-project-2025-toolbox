@@ -11,6 +11,6 @@ namespace ToolTrack.Repository.Repos
 
     public class WorkStatisticRepository : BaseRepository<WorkStatistic>
     {
-        public WorkStatisticRepository(DbContext context) : base(context) { }
+        public WorkStatisticRepository(TTContext context) : base(context) { }
     }
 }

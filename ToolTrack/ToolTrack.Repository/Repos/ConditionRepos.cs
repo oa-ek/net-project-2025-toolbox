@@ -10,6 +10,6 @@ namespace ToolTrack.Repository.Repos
 {
     public class ConditionRepository : BaseRepository<Condition>
     {
-        public ConditionRepository(DbContext context) : base(context) { }
+        public ConditionRepository(TTContext context) : base(context) { }
     }
 }

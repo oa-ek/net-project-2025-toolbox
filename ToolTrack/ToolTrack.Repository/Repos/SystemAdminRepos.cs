@@ -10,6 +10,6 @@ namespace ToolTrack.Repository.Repos
 {
     public class SystemAdminRepository : BaseRepository<SystemAdmin>
     {
-        public SystemAdminRepository(DbContext context) : base(context) { }
+        public SystemAdminRepository(TTContext context) : base(context) { }
     }
 }

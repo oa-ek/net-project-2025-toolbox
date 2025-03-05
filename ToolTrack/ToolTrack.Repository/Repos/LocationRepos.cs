@@ -10,6 +10,6 @@ namespace ToolTrack.Repository.Repos
 {
     public class LocationRepository : BaseRepository<Location>
     {
-        public LocationRepository(DbContext context) : base(context) { }
+        public LocationRepository(TTContext context) : base(context) { }
     }
 }

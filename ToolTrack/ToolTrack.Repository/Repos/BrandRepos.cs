@@ -10,6 +10,6 @@ namespace ToolTrack.Repository.Repos
 {
     public class BrandRepository : BaseRepository<Brand>
     {
-        public BrandRepository(DbContext context) : base(context) { }
+        public BrandRepository(TTContext context) : base(context) { }
     }
 }

@@ -10,6 +10,6 @@ namespace ToolTrack.Repository.Repos
 {
     public class ToolTypeRepository : BaseRepository<ToolType>
     {
-        public ToolTypeRepository(DbContext context) : base(context) { }
+        public ToolTypeRepository(TTContext context) : base(context) { }
     }
 }
