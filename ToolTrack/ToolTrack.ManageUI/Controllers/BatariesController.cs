@@ -1,175 +1,111 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
+using ToolTrack.Repository;
 using Core;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace ToolTrack.ManageUI.Controllers
 {
     public class BatariesController : Controller
     {
-        private readonly TTContext _context;
+        private readonly BaseInterface<Batary> _bataryRepository;
+        private readonly BaseInterface<BataryModel> _bataryModelRepository;
+        private readonly BaseInterface<Condition> _conditionRepository;
+        private readonly BaseInterface<Worker> _workerRepository;
 
-        public BatariesController(TTContext context)
+        public BatariesController(
+            BaseInterface<Batary> bataryRepository,
+            BaseInterface<BataryModel> bataryModelRepository,
+            BaseInterface<Condition> conditionRepository,
+            BaseInterface<Worker> workerRepository)
         {
-            _context = context;
+            _bataryRepository = bataryRepository;
+            _bataryModelRepository = bataryModelRepository;
+            _conditionRepository = conditionRepository;
+            _workerRepository = workerRepository;
         }
 
-        // GET: Bataries
         public async Task<IActionResult> Index()
         {
-            var tTContext = _context.Bataries.Include(b => b.BataryModel).Include(b => b.Condition).Include(b => b.LastWorker);
-            return View(await tTContext.ToListAsync());
+            var bataries = await _bataryRepository.GetAsync();
+            return View(bataries);
         }
 
-        // GET: Bataries/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var batary = await _context.Bataries
-                .Include(b => b.BataryModel)
-                .Include(b => b.Condition)
-                .Include(b => b.LastWorker)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (batary == null)
-            {
-                return NotFound();
-            }
-
+            var batary = await _bataryRepository.GetAsync(id);
+            if (batary == null) return NotFound();
             return View(batary);
         }
 
-        // GET: Bataries/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["BataryModelId"] = new SelectList(_context.BataryModels, "Id", "Name");
-            ViewData["ConditionId"] = new SelectList(_context.Conditions, "Id", "Name");
-            ViewData["LastWorkerId"] = new SelectList(_context.Workers, "Id", "Email");
+            await PopulateViewData();
             return View();
         }
 
-        // POST: Bataries/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,BataryModelId,DateMade,SerialNumber,Number,Price,ConditionId,LastWorkerId,LastLocationId")] Batary batary)
+        public async Task<IActionResult> Create(Batary batary)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Add(batary);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                await PopulateViewData();
+                return View(batary);
             }
-            ViewData["BataryModelId"] = new SelectList(_context.BataryModels, "Id", "Name", batary.BataryModelId);
-            ViewData["ConditionId"] = new SelectList(_context.Conditions, "Id", "Name", batary.ConditionId);
-            ViewData["LastWorkerId"] = new SelectList(_context.Workers, "Id", "Email", batary.LastWorkerId);
+
+            await _bataryRepository.CreateAsync(batary);
+            return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> Edit(int id)
+        {
+            var batary = await _bataryRepository.GetAsync(id);
+            if (batary == null) return NotFound();
+
+            await PopulateViewData();
             return View(batary);
         }
 
-        // GET: Bataries/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var batary = await _context.Bataries.FindAsync(id);
-            if (batary == null)
-            {
-                return NotFound();
-            }
-            ViewData["BataryModelId"] = new SelectList(_context.BataryModels, "Id", "Name", batary.BataryModelId);
-            ViewData["ConditionId"] = new SelectList(_context.Conditions, "Id", "Name", batary.ConditionId);
-            ViewData["LastWorkerId"] = new SelectList(_context.Workers, "Id", "Email", batary.LastWorkerId);
-            return View(batary);
-        }
-
-        // POST: Bataries/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,BataryModelId,DateMade,SerialNumber,Number,Price,ConditionId,LastWorkerId,LastLocationId")] Batary batary)
+        public async Task<IActionResult> Edit(int id, Batary batary)
         {
-            if (id != batary.Id)
+            if (id != batary.Id) return NotFound();
+
+            if (!ModelState.IsValid)
             {
-                return NotFound();
+                await PopulateViewData();
+                return View(batary);
             }
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(batary);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!BataryExists(batary.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["BataryModelId"] = new SelectList(_context.BataryModels, "Id", "Name", batary.BataryModelId);
-            ViewData["ConditionId"] = new SelectList(_context.Conditions, "Id", "Name", batary.ConditionId);
-            ViewData["LastWorkerId"] = new SelectList(_context.Workers, "Id", "Email", batary.LastWorkerId);
-            return View(batary);
+            await _bataryRepository.UpdateAsync(batary);
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: Bataries/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var batary = await _context.Bataries
-                .Include(b => b.BataryModel)
-                .Include(b => b.Condition)
-                .Include(b => b.LastWorker)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (batary == null)
-            {
-                return NotFound();
-            }
+            var batary = await _bataryRepository.GetAsync(id);
+            if (batary == null) return NotFound();
 
             return View(batary);
         }
 
-        // POST: Bataries/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var batary = await _context.Bataries.FindAsync(id);
-            if (batary != null)
-            {
-                _context.Bataries.Remove(batary);
-            }
-
-            await _context.SaveChangesAsync();
+            await _bataryRepository.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool BataryExists(int id)
+        private async Task PopulateViewData()
         {
-            return _context.Bataries.Any(e => e.Id == id);
+            ViewData["BataryModelId"] = new SelectList(await _bataryModelRepository.GetAsync(), "Id", "Name");
+            ViewData["ConditionId"] = new SelectList(await _conditionRepository.GetAsync(), "Id", "Name");
+            ViewData["LastWorkerId"] = new SelectList(await _workerRepository.GetAsync(), "Id", "Email");
         }
     }
 }
