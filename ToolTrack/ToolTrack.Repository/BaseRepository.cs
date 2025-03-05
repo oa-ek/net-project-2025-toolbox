@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace ToolTrack.Repository
 {
+    //виправив на асинхронні методи
     public class BaseRepository<T> : BaseInterface<T> where T : class
     {
         protected readonly DbContext _context;
@@ -18,38 +19,40 @@ namespace ToolTrack.Repository
             _dbSet = context.Set<T>();
         }
 
-        public void Create(T entity)
+        public async Task CreateAsync(T entity)
         {
-            _dbSet.Add(entity);
+            await _dbSet.AddAsync(entity);
         }
 
-        public IEnumerable<T> Get()
+        public async Task<IEnumerable<T>> GetAsync()
         {
-            return _dbSet.ToList();
+            return await _dbSet.ToListAsync();
         }
 
-        public T Get(int id)
+        public async Task<T> GetAsync(int id)
         {
-            return _dbSet.Find(id);
+            return await _dbSet.FindAsync(id);
         }
 
-        public void Update(T entity)
+        public async Task UpdateAsync(T entity)
         {
             _dbSet.Update(entity);
+            await SaveChangesAsync();
         }
 
-        public void Delete(int id)
+        public async Task DeleteAsync(int id)
         {
-            var entity = _dbSet.Find(id);
+            var entity = await _dbSet.FindAsync(id);
             if (entity != null)
             {
                 _dbSet.Remove(entity);
+                await SaveChangesAsync();
             }
         }
 
-        public void SaveChanges()
+        public async Task SaveChangesAsync()
         {
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
     }
 }

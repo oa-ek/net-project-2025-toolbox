@@ -2,12 +2,11 @@
 {
     public interface BaseInterface<T>
     {
-        void Create(T entity);
-        IEnumerable<T> Get();
-        T Get(int id);
-        void Update(T entity);
-        void Delete(int id);
-        void SaveChanges();
-
+        Task CreateAsync(T entity);
+        Task<IEnumerable<T>> GetAsync();
+        Task<T> GetAsync(int id);
+        Task UpdateAsync(T entity);
+        Task DeleteAsync(int id);
+        Task SaveChangesAsync();
     }
 }
