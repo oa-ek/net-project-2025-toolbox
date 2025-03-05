@@ -1,0 +1,157 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Core
+{
+    public class Batary
+    {
+        public int Id { get; set; }
+        public int BataryModelId { get; set; }
+        public DateOnly DateMade { get; set; }
+        public string SerialNumber { get; set; }
+        public string Number { get; set; }
+        public double Price { get; set; } // $
+        public int ConditionId { get; set; }
+        public int LastWorkerId { get; set; }
+        public int LastLocationId { get; set; }
+
+        // Navigation properties
+        public BataryModel BataryModel { get; set; }
+        public Condition Condition { get; set; }
+        public Worker LastWorker { get; set; }
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Core
+{
+    public class BataryModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int BrandId { get; set; }
+
+        // navigation property
+        public Brand Brand { get; set; }
+        public IEnumerable<Batary> Bataries { get; set; }
+    }
+}
+namespace Core
+{
+    public class Brand
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+
+        // navigation property
+        public IEnumerable<ToolModel> ToolModels { get; set; }
+        public IEnumerable<HandTool> HandTools { get; set; }
+    }
+}
+namespace Core
+{
+    public class Condition
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+
+        // navigation property
+        public IEnumerable<PowerTool> Tools { get; set; }
+        public IEnumerable<HandTool> HandTools { get; set; }
+        public IEnumerable<Batary> Bataries { get; set; }
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Core
+{
+    public class HandTool
+    {
+        public int Id { get; set; }
+        public int BrandId { get; set; }
+        public int ConditionId { get; set; }
+        public int ToolTypeId { get; set; }
+        public int LastWorkerId { get; set; }
+        public int LastLocationId { get; set; }
+        public double Price { get; set; }
+
+        // Navigation properties
+        public Brand Brand { get; set; }
+        public Condition Condition { get; set; }
+        public ToolType ToolType { get; set; }
+        public Worker LastWorker { get; set; }
+    }
+}
+namespace Core
+{
+    public class PowerSupplyType
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+
+        // navigation property
+        public IEnumerable<PowerTool> Tools { get; set; }
+    }
+}
+namespace Core
+{
+    public class PowerTool
+    {
+        public int Id { get; set; }
+        public int TypeId { get; set; }
+        public int ConditionId { get; set; }
+        public int LastWorkerId { get; set; }
+        public int LastLocationId { get; set; }
+        public int ToolModelId { get; set; }
+        public bool HaveCase { get; set; }
+        public DateOnly DateMade { get; set; }
+        public string SerialNumber { get; set; }
+        public string Number { get; set; }
+        public double Price { get; set; } // $
+        public int PowerSupplyTypeId { get; set; } 
+
+        // Navigation properties
+        public ToolType ToolType { get; set; }
+        public Condition Condition { get; set; }
+        public ToolModel ToolModel { get; set; }
+        public PowerSupplyType PowerSupplyType { get; set; }
+        public Worker LastWorker { get; set; }
+    }
+}
+namespace Core
+{
+    public class ToolModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int BrandId { get; set; }
+
+        // navigation property
+        public IEnumerable<PowerTool> Tools { get; set; }
+        public Brand Brand { get; set; }
+    }
+}
+namespace Core
+{
+    public class ToolType
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+
+        // navigation property
+        public IEnumerable<PowerTool> Tools { get; set; }
+        public IEnumerable<HandTool> HandTool { get; set; }
+
+    }
+}
