@@ -17,7 +17,7 @@ namespace Core
         public string Number { get; set; }
         public double Price { get; set; } // $
         public int ConditionId { get; set; }
-        public int LastWorkerId { get; set; }
+        public int? LastWorkerId { get; set; }
         public int LastLocationId { get; set; }
 
         // Navigation properties

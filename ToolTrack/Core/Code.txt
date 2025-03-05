@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ namespace Core
 {
     public class Batary
     {
+        [Key]
         public int Id { get; set; }
         public int BataryModelId { get; set; }
         public DateOnly DateMade { get; set; }
@@ -26,6 +28,7 @@ namespace Core
 }
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,6 +37,7 @@ namespace Core
 {
     public class BataryModel
     {
+        [Key]
         public int Id { get; set; }
         public string Name { get; set; }
         public int BrandId { get; set; }
@@ -43,22 +47,29 @@ namespace Core
         public IEnumerable<Batary> Bataries { get; set; }
     }
 }
+using System.ComponentModel.DataAnnotations;
+
 namespace Core
 {
     public class Brand
     {
+        [Key]
         public int Id { get; set; }
         public string Name { get; set; }
 
         // navigation property
+        public IEnumerable<BataryModel> BataryModels { get; set; }
         public IEnumerable<ToolModel> ToolModels { get; set; }
         public IEnumerable<HandTool> HandTools { get; set; }
     }
 }
+using System.ComponentModel.DataAnnotations;
+
 namespace Core
 {
     public class Condition
     {
+        [Key]
         public int Id { get; set; }
         public string Name { get; set; }
 
@@ -70,6 +81,7 @@ namespace Core
 }
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -78,6 +90,7 @@ namespace Core
 {
     public class HandTool
     {
+        [Key]
         public int Id { get; set; }
         public int BrandId { get; set; }
         public int ConditionId { get; set; }
@@ -93,10 +106,13 @@ namespace Core
         public Worker LastWorker { get; set; }
     }
 }
+using System.ComponentModel.DataAnnotations;
+
 namespace Core
 {
     public class PowerSupplyType
     {
+        [Key]
         public int Id { get; set; }
         public string Name { get; set; }
 
@@ -104,10 +120,13 @@ namespace Core
         public IEnumerable<PowerTool> Tools { get; set; }
     }
 }
+using System.ComponentModel.DataAnnotations;
+
 namespace Core
 {
     public class PowerTool
     {
+        [Key]
         public int Id { get; set; }
         public int TypeId { get; set; }
         public int ConditionId { get; set; }
@@ -129,23 +148,29 @@ namespace Core
         public Worker LastWorker { get; set; }
     }
 }
+using System.ComponentModel.DataAnnotations;
+
 namespace Core
 {
     public class ToolModel
     {
+        [Key]
         public int Id { get; set; }
         public string Name { get; set; }
         public int BrandId { get; set; }
 
         // navigation property
-        public IEnumerable<PowerTool> Tools { get; set; }
+        public IEnumerable<PowerTool> PowerTools { get; set; }
         public Brand Brand { get; set; }
     }
 }
+using System.ComponentModel.DataAnnotations;
+
 namespace Core
 {
     public class ToolType
     {
+        [Key]
         public int Id { get; set; }
         public string Name { get; set; }
 
@@ -153,5 +178,158 @@ namespace Core
         public IEnumerable<PowerTool> Tools { get; set; }
         public IEnumerable<HandTool> HandTool { get; set; }
 
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Core
+{
+    public class Boss
+    {
+        [Key]
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public string Phone { get; set; }
+        public string Password { get; set; }
+
+        // navigation properties
+        public IEnumerable<Location> Locations { get; set; }
+        public IEnumerable<Worker> Workers { get; set; }
+        public IEnumerable<SystemAdmin> SystemAdmins { get; set; }
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Core
+{
+    public class Location
+    {
+        [Key]
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public double Latitute { get; set; }
+        public double Longitute { get; set; }
+
+        // navigation property
+       /* public IEnumerable<Worker> Workers { get; set; }*/
+        public IEnumerable<Boss> Bosses { get; set; }
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Core
+{
+    public class Position
+    {
+        [Key]
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int SalaryPerHour { get; set; } // UAN
+        public int BossId { get; set; }
+
+        // navigation property
+        public IEnumerable<Worker> Workers { get; set; }
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Core
+{
+    public class SystemAdmin
+    {
+        [Key]
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public string Phone { get; set; }
+        public string Password { get; set; }
+        public int BossId { get; set; }
+
+        // navigation properties
+        public Boss Boss { get; set; }
+
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+
+namespace Core
+{
+    public class Worker
+    {
+        [Key]
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public string Phone { get; set; }
+        public string Password { get; set; }
+        public int LocationId { get; set; }
+        public int? BryhadyrId { get; set; } // FK до бригадира
+        public int PositionId { get; set; }
+        public int BossId { get; set; }
+        public double? Latitute { get; set; }
+        public double? Longitute { get; set; }
+
+        // Навігаційні властивості (один об'єкт)
+        public Location Location { get; set; }
+        public Position Position { get; set; }
+        public Boss Boss { get; set; }
+        public Worker Bryhadyr { get; set; } // Один бригадир
+
+        // Навігаційні властивості (колекції)
+        public ICollection<Worker> SubWorkers { get; set; } // Працівники, підлеглі бригадиру
+        public ICollection<WorkStatistic> WorkStatistics { get; set; }
+        public ICollection<PowerTool> PowerTools { get; set; } 
+        public ICollection<HandTool> HandTools { get; set; }
+        public ICollection<Batary> Bataries { get; set; } 
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Core
+{
+    public class WorkStatistic
+    {
+        [Key]
+        public int Id { get; set; }
+        public int WorkerId { get; set; }
+        public DateOnly Date { get; set; }
+        public double HoursWorked { get; set; }
+        public int LocationId { get; set; }
+        public bool Submiteed { get; set; }
+
+        // navigation properties
+        public Worker Worker { get; set; }
     }
 }
