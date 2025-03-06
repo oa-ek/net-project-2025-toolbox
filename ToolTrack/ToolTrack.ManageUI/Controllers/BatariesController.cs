@@ -14,17 +14,20 @@ namespace ToolTrack.ManageUI.Controllers
         private readonly BaseInterface<BataryModel> _bataryModelRepository;
         private readonly BaseInterface<Condition> _conditionRepository;
         private readonly BaseInterface<Worker> _workerRepository;
+        private readonly BaseInterface<Location> _locationRepository;
 
         public BatariesController(
             BaseInterface<Batary> bataryRepository,
             BaseInterface<BataryModel> bataryModelRepository,
             BaseInterface<Condition> conditionRepository,
-            BaseInterface<Worker> workerRepository)
+            BaseInterface<Worker> workerRepository,
+            BaseInterface<Location> locationRepository)
         {
             _bataryRepository = bataryRepository;
             _bataryModelRepository = bataryModelRepository;
             _conditionRepository = conditionRepository;
             _workerRepository = workerRepository;
+            _locationRepository = locationRepository;
         }
 
         public async Task<IActionResult> Index()
@@ -114,7 +117,7 @@ namespace ToolTrack.ManageUI.Controllers
             ViewData["BataryModelId"] = new SelectList(await _bataryModelRepository.GetAsync() ?? new List<BataryModel>(), "Id", "Name");
             ViewData["ConditionId"] = new SelectList(await _conditionRepository.GetAsync() ?? new List<Condition>(), "Id", "Name");
             ViewData["LastWorkerId"] = new SelectList(await _workerRepository.GetAsync() ?? new List<Worker>(), "Id", "Email");
+            ViewData["LastLocationId"] = new SelectList(await _locationRepository.GetAsync() ?? new List<Location>(), "Id", "Name");
         }
-
     }
 }

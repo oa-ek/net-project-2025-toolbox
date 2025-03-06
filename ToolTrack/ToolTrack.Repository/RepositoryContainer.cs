@@ -26,6 +26,8 @@ namespace ToolTrack.Repository
         //added missing 
         public BaseRepository<HandTool> HandToolRepository { get; set; }
         public BaseRepository<Batary> BateryRepository { get; set; }
+
+        public TTContext Context => _context;
         public RepositoryContainer(TTContext context)
         {
             _context = context;
