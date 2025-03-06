@@ -1,7 +1,10 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\ToolTrack",
+    "\\ToolTrack\\Core",
+    "\\ToolTrack\\Core\\Worker-Entities"
   ],
-  "SelectedNode": "\\C:\\Users\\Graf David\\Source\\Repos\\net-project-2025-toolbox",
+  "SelectedNode": "\\ToolTrack\\Core\\Worker-Entities\\Boss.cs",
   "PreviewInSolutionExplorer": false
 }

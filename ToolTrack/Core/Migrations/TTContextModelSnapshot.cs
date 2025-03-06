@@ -34,7 +34,7 @@ namespace Core.Migrations
 
                     b.HasIndex("LocationsId");
 
-                    b.ToTable("BossLocation", (string)null);
+                    b.ToTable("BossLocation");
                 });
 
             modelBuilder.Entity("Core.Batary", b =>
@@ -57,7 +57,7 @@ namespace Core.Migrations
                     b.Property<int>("LastLocationId")
                         .HasColumnType("int");
 
-                    b.Property<int>("LastWorkerId")
+                    b.Property<int?>("LastWorkerId")
                         .HasColumnType("int");
 
                     b.Property<string>("Number")
@@ -79,7 +79,7 @@ namespace Core.Migrations
 
                     b.HasIndex("LastWorkerId");
 
-                    b.ToTable("Bataries", (string)null);
+                    b.ToTable("Bataries");
                 });
 
             modelBuilder.Entity("Core.BataryModel", b =>
@@ -101,7 +101,7 @@ namespace Core.Migrations
 
                     b.HasIndex("BrandId");
 
-                    b.ToTable("BataryModels", (string)null);
+                    b.ToTable("BataryModels");
                 });
 
             modelBuilder.Entity("Core.Boss", b =>
@@ -134,7 +134,7 @@ namespace Core.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Bosses", (string)null);
+                    b.ToTable("Bosses");
                 });
 
             modelBuilder.Entity("Core.Brand", b =>
@@ -151,7 +151,7 @@ namespace Core.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Brands", (string)null);
+                    b.ToTable("Brands");
                 });
 
             modelBuilder.Entity("Core.Condition", b =>
@@ -168,7 +168,7 @@ namespace Core.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Conditions", (string)null);
+                    b.ToTable("Conditions");
                 });
 
             modelBuilder.Entity("Core.HandTool", b =>
@@ -188,7 +188,7 @@ namespace Core.Migrations
                     b.Property<int>("LastLocationId")
                         .HasColumnType("int");
 
-                    b.Property<int>("LastWorkerId")
+                    b.Property<int?>("LastWorkerId")
                         .HasColumnType("int");
 
                     b.Property<double>("Price")
@@ -207,7 +207,7 @@ namespace Core.Migrations
 
                     b.HasIndex("ToolTypeId");
 
-                    b.ToTable("HandTools", (string)null);
+                    b.ToTable("HandTools");
                 });
 
             modelBuilder.Entity("Core.Location", b =>
@@ -234,7 +234,7 @@ namespace Core.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Locations", (string)null);
+                    b.ToTable("Locations");
                 });
 
             modelBuilder.Entity("Core.Position", b =>
@@ -257,7 +257,7 @@ namespace Core.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Positions", (string)null);
+                    b.ToTable("Positions");
                 });
 
             modelBuilder.Entity("Core.PowerSupplyType", b =>
@@ -274,7 +274,7 @@ namespace Core.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PowerSupplyTypes", (string)null);
+                    b.ToTable("PowerSupplyTypes");
                 });
 
             modelBuilder.Entity("Core.PowerTool", b =>
@@ -297,7 +297,7 @@ namespace Core.Migrations
                     b.Property<int>("LastLocationId")
                         .HasColumnType("int");
 
-                    b.Property<int>("LastWorkerId")
+                    b.Property<int?>("LastWorkerId")
                         .HasColumnType("int");
 
                     b.Property<string>("Number")
@@ -335,7 +335,7 @@ namespace Core.Migrations
 
                     b.HasIndex("ToolTypeId");
 
-                    b.ToTable("PowerTools", (string)null);
+                    b.ToTable("PowerTools");
                 });
 
             modelBuilder.Entity("Core.SystemAdmin", b =>
@@ -373,7 +373,7 @@ namespace Core.Migrations
 
                     b.HasIndex("BossId");
 
-                    b.ToTable("SystemAdmins", (string)null);
+                    b.ToTable("SystemAdmins");
                 });
 
             modelBuilder.Entity("Core.ToolModel", b =>
@@ -395,7 +395,7 @@ namespace Core.Migrations
 
                     b.HasIndex("BrandId");
 
-                    b.ToTable("ToolModels", (string)null);
+                    b.ToTable("ToolModels");
                 });
 
             modelBuilder.Entity("Core.ToolType", b =>
@@ -412,7 +412,7 @@ namespace Core.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ToolTypes", (string)null);
+                    b.ToTable("ToolTypes");
                 });
 
             modelBuilder.Entity("Core.WorkStatistic", b =>
@@ -442,7 +442,7 @@ namespace Core.Migrations
 
                     b.HasIndex("WorkerId");
 
-                    b.ToTable("WorkStatistics", (string)null);
+                    b.ToTable("WorkStatistics");
                 });
 
             modelBuilder.Entity("Core.Worker", b =>
@@ -501,7 +501,7 @@ namespace Core.Migrations
 
                     b.HasIndex("PositionId");
 
-                    b.ToTable("Workers", (string)null);
+                    b.ToTable("Workers");
                 });
 
             modelBuilder.Entity("BossLocation", b =>
@@ -535,9 +535,7 @@ namespace Core.Migrations
 
                     b.HasOne("Core.Worker", "LastWorker")
                         .WithMany("Bataries")
-                        .HasForeignKey("LastWorkerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("LastWorkerId");
 
                     b.Navigation("BataryModel");
 
@@ -573,9 +571,7 @@ namespace Core.Migrations
 
                     b.HasOne("Core.Worker", "LastWorker")
                         .WithMany("HandTools")
-                        .HasForeignKey("LastWorkerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("LastWorkerId");
 
                     b.HasOne("Core.ToolType", "ToolType")
                         .WithMany("HandTool")
@@ -602,9 +598,7 @@ namespace Core.Migrations
 
                     b.HasOne("Core.Worker", "LastWorker")
                         .WithMany("PowerTools")
-                        .HasForeignKey("LastWorkerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("LastWorkerId");
 
                     b.HasOne("Core.PowerSupplyType", "PowerSupplyType")
                         .WithMany("Tools")
@@ -638,7 +632,7 @@ namespace Core.Migrations
             modelBuilder.Entity("Core.SystemAdmin", b =>
                 {
                     b.HasOne("Core.Boss", "Boss")
-                        .WithMany()
+                        .WithMany("SystemAdmins")
                         .HasForeignKey("BossId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -671,7 +665,7 @@ namespace Core.Migrations
             modelBuilder.Entity("Core.Worker", b =>
                 {
                     b.HasOne("Core.Boss", "Boss")
-                        .WithMany()
+                        .WithMany("Workers")
                         .HasForeignKey("BossId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -687,7 +681,7 @@ namespace Core.Migrations
                         .IsRequired();
 
                     b.HasOne("Core.Position", "Position")
-                        .WithMany()
+                        .WithMany("Workers")
                         .HasForeignKey("PositionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -706,6 +700,13 @@ namespace Core.Migrations
                     b.Navigation("Bataries");
                 });
 
+            modelBuilder.Entity("Core.Boss", b =>
+                {
+                    b.Navigation("SystemAdmins");
+
+                    b.Navigation("Workers");
+                });
+
             modelBuilder.Entity("Core.Brand", b =>
                 {
                     b.Navigation("BataryModels");
@@ -722,6 +723,11 @@ namespace Core.Migrations
                     b.Navigation("HandTools");
 
                     b.Navigation("Tools");
+                });
+
+            modelBuilder.Entity("Core.Position", b =>
+                {
+                    b.Navigation("Workers");
                 });
 
             modelBuilder.Entity("Core.PowerSupplyType", b =>
