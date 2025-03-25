@@ -11,25 +11,26 @@ class Program
 {
     static async Task Main(string[] args)
     {
-       
-            try
-            {
-            var context = new TTContext();
+        try
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<TTContext>();
+            optionsBuilder.UseSqlServer("Server=localhost,1433;Database=ToolTrackDB4;User Id=sa;Password=ToolTrack123!;TrustServerCertificate=True");
 
-                // Переконайтесь, що база даних створена
-                context.Database.Migrate();
+            var context = new TTContext(optionsBuilder.Options);
 
-                // Виклик Seed.Initialize для заповнення даних
-                var repositories = new RepositoryContainer(context);
-                await Seed.InitializeAsync(repositories);
+            // Переконайтесь, що база даних створена
+            context.Database.Migrate();
 
-                Console.WriteLine("База даних успішно заповнена тестовими даними!");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Помилка під час заповнення бази даних: {ex.Message}");
-                Console.WriteLine($"Inner Exception: {ex.InnerException?.Message}");
-            }
-        
+            // Виклик Seed.Initialize для заповнення даних
+            var repositories = new RepositoryContainer(context);
+            await Seed.InitializeAsync(repositories);
+
+            Console.WriteLine("База даних успішно заповнена тестовими даними!");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Помилка під час заповнення бази даних: {ex.Message}");
+            Console.WriteLine($"Inner Exception: {ex.InnerException?.Message}");
+        }
     }
 }

@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repository", "Repository\Re
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SeedData", "SeedData\SeedData.csproj", "{402D6B29-C885-4E5C-B02F-49C3509A9239}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UIinterface", "UIinterface\UIinterface\UIinterface.csproj", "{D03D236F-06BA-4D77-BF60-A248AD25BDF9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UIinterface.Client", "UIinterface\UIinterface.Client\UIinterface.Client.csproj", "{28310995-E7AA-4E5D-80CE-FD3CC1B15CE1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{402D6B29-C885-4E5C-B02F-49C3509A9239}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{402D6B29-C885-4E5C-B02F-49C3509A9239}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{402D6B29-C885-4E5C-B02F-49C3509A9239}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D03D236F-06BA-4D77-BF60-A248AD25BDF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D03D236F-06BA-4D77-BF60-A248AD25BDF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D03D236F-06BA-4D77-BF60-A248AD25BDF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D03D236F-06BA-4D77-BF60-A248AD25BDF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28310995-E7AA-4E5D-80CE-FD3CC1B15CE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28310995-E7AA-4E5D-80CE-FD3CC1B15CE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28310995-E7AA-4E5D-80CE-FD3CC1B15CE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28310995-E7AA-4E5D-80CE-FD3CC1B15CE1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

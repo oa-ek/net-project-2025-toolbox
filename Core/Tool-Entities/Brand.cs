@@ -9,8 +9,8 @@ namespace Core
         public string Name { get; set; }
 
         // navigation property
-       public IEnumerable<BataryModel> BataryModels { get; set; }
-       public IEnumerable<ToolModel> ToolModels { get; set; }
-       public IEnumerable<HandTool> HandTools { get; set; }
+        public IEnumerable<ToolModel> ToolModels { get; set; }
+        public IEnumerable<BataryModel> BataryModels { get; set; }
+        public IEnumerable<HandTool> HandTools { get; set; }
     }
 }

@@ -1,9 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using System;
 
 namespace Core
 {
-    public class TTContext : DbContext
+    public class TTContext : IdentityDbContext<AppUser>
     {
+        public TTContext(DbContextOptions<TTContext> options) : base(options)
+        { }
+
+
         public DbSet<Brand> Brands { get; set; }
         public DbSet<ToolType> ToolTypes { get; set; }
         public DbSet<PowerSupplyType> PowerSupplyTypes { get; set; }
@@ -19,9 +25,7 @@ namespace Core
         public DbSet<Position> Positions { get; set; }
         public DbSet<Worker> Workers { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder options)
-        {
-            options.UseSqlServer("Server=localhost,1433;Database=ToolTrackDB1;User Id=sa;Password=ToolTrack123!;TrustServerCertificate=True;");
-        }
+
+       
     }
 }
