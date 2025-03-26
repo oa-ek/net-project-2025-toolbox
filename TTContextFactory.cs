@@ -1,33 +1,24 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
+using System.IO;
 
 namespace Core
 {
-    public class TTContext : DbContext
+    public class TTContextFactory : IDesignTimeDbContextFactory<TTContext>
     {
-        private TTContext(DbContextOptions<TTContext> options) : base(options) { } //зробив конструктор приватним
-        public DbSet<Brand> Brands { get; set; }
-        public DbSet<ToolType> ToolTypes { get; set; }
-        public DbSet<PowerSupplyType> PowerSupplyTypes { get; set; }
-        public DbSet<Condition> Conditions { get; set; }
-        public DbSet<Position> Positions { get; set; }
-        public DbSet<ToolModel> ToolModels { get; set; }
-        public DbSet<BataryModel> BataryModels { get; set; }
-        public DbSet<Location> Locations { get; set; }
-        public DbSet<Boss> Bosses { get; set; }
-        public DbSet<SystemAdmin> SystemAdmins { get; set; }
-        public DbSet<Worker> Workers { get; set; }
-        public DbSet<WorkStatistic> WorkStatistics { get; set; }
-        public DbSet<PowerTool> PowerTools { get; set; }
-        public DbSet<HandTool> HandTools { get; set; }
-        public DbSet<Batary> Bataries { get; set; }
-
-
-        protected override void OnConfiguring(DbContextOptionsBuilder options)
+        public TTContext CreateDbContext(string[] args)
         {
-            options.UseSqlServer("Server=localhost,1433;Database=ToolTrackDB1;User Id=sa;Password=ToolTrack123!;TrustServerCertificate=True;");
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
+
+            var optionsBuilder = new DbContextOptionsBuilder<TTContext>();
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            optionsBuilder.UseSqlServer(connectionString);
+
+            return new TTContext(optionsBuilder.Options);
         }
-
-
     }
-
 }
