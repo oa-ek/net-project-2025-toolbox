@@ -34,6 +34,9 @@ namespace UIinterface
             builder.Services.AddScoped<IBaseService<ToolTypeDto>, BaseService<ToolType, ToolTypeDto>>();
             builder.Services.AddScoped<IBaseService<WorkerDto>, BaseService<Worker, WorkerDto>>();
 
+
+            builder.Services.AddScoped<LocationService>();
+
             // Реєстрація BaseRepository для кожної сутності
             builder.Services.AddScoped<BaseRepository<Brand>>();
             builder.Services.AddScoped<BaseRepository<Batary>>();
@@ -133,4 +136,8 @@ namespace UIinterface
         }
     }
 }
+
+
+
+
 
