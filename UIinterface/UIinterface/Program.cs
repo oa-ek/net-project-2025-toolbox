@@ -102,6 +102,19 @@ namespace UIinterface
 
             builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
+
+
+            //GOOGLE AUTH
+                builder.Services.AddAuthentication()
+                    .AddGoogle(options =>
+                    {
+                        options.ClientId = builder.Configuration["Google:ClientId"];
+                        options.ClientSecret = builder.Configuration["Google:ClientSecret"];
+                        options.CallbackPath = "/signin-google"; // Додайте цей рядок, якщо він відсутній
+                    });
+
+
+
             var app = builder.Build();
 
             if (app.Environment.IsDevelopment())
@@ -124,6 +137,9 @@ namespace UIinterface
 
             app.UseHttpsRedirection();
             app.UseAntiforgery();
+
+            app.UseAuthentication(); // Додайте цей рядок, якщо він відсутній
+            app.UseAuthorization(); // Додайте цей рядок, якщо він відсутній
 
             app.MapStaticAssets();
             app.MapRazorComponents<App>()
