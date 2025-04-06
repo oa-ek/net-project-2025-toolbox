@@ -9,6 +9,7 @@ using Core.Mappings;
 using Core.DTOs;
 using Repository;
 using UIinterface.Services;
+using UIinterface.Controlers;
 
 namespace UIinterface
 {
@@ -33,7 +34,6 @@ namespace UIinterface
             builder.Services.AddScoped<IBaseService<ToolModelDto>, BaseService<ToolModel, ToolModelDto>>();
             builder.Services.AddScoped<IBaseService<ToolTypeDto>, BaseService<ToolType, ToolTypeDto>>();
             builder.Services.AddScoped<IBaseService<WorkerDto>, BaseService<Worker, WorkerDto>>();
-
 
             builder.Services.AddScoped<LocationService>();
 
@@ -68,17 +68,28 @@ namespace UIinterface
                 .AddInteractiveServerComponents()
                 .AddAuthenticationStateSerialization();
 
+            // Додайте ці рядки для налаштування AuthenticationStateProvider та інших сервісів
+            builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
             builder.Services.AddCascadingAuthenticationState();
             builder.Services.AddScoped<IdentityUserAccessor>();
             builder.Services.AddScoped<IdentityRedirectManager>();
-            builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultScheme = IdentityConstants.ApplicationScheme;
                 options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
             })
-                .AddIdentityCookies();
+                .AddIdentityCookies(options =>
+                {
+                    options.ApplicationCookie.Configure(cookieOptions =>
+                    {
+                        cookieOptions.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                    });
+                    options.ExternalCookie.Configure(cookieOptions =>
+                    {
+                        cookieOptions.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                    });
+                });
 
             // Get connection string once
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -102,20 +113,28 @@ namespace UIinterface
 
             builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
+            // Додайте налаштування антифальсифікації
+            builder.Services.AddAntiforgery(options =>
+            {
+                options.HeaderName = "X-CSRF-TOKEN";
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            });
+
+            // Додайте реєстрацію HttpContextAccessor
+            builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
 
-            //GOOGLE AUTH
-                builder.Services.AddAuthentication()
-                    .AddGoogle(options =>
-                    {
-                        options.ClientId = builder.Configuration["Google:ClientId"];
-                        options.ClientSecret = builder.Configuration["Google:ClientSecret"];
-                        options.CallbackPath = "/signin-google"; // Додайте цей рядок, якщо він відсутній
-                    });
-
-
+            // GOOGLE AUTH
+            builder.Services.AddAuthentication()
+                .AddGoogle(options =>
+                {
+                    options.ClientId = builder.Configuration["Google:ClientId"];
+                    options.ClientSecret = builder.Configuration["Google:ClientSecret"];
+                    options.CallbackPath = "/signin-google"; // Додайте цей рядок, якщо він відсутній
+                });
 
             var app = builder.Build();
+            app.UseAntiforgery();
 
             if (app.Environment.IsDevelopment())
             {
@@ -138,8 +157,8 @@ namespace UIinterface
             app.UseHttpsRedirection();
             app.UseAntiforgery();
 
-            app.UseAuthentication(); // Додайте цей рядок, якщо він відсутній
-            app.UseAuthorization(); // Додайте цей рядок, якщо він відсутній
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.MapStaticAssets();
             app.MapRazorComponents<App>()
@@ -152,8 +171,4 @@ namespace UIinterface
         }
     }
 }
-
-
-
-
 

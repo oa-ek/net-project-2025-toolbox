@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -41,13 +42,22 @@ namespace Microsoft.AspNetCore.Routing
             });
 
             accountGroup.MapPost("/Logout", async (
+                HttpContext context,
                 ClaimsPrincipal user,
-                [FromServices] SignInManager<ApplicationUser> signInManager,
+                [FromServices] IAntiforgery antiforgery,
                 [FromForm] string returnUrl) =>
             {
-                await signInManager.SignOutAsync();
+                // Validate the antiforgery token
+                await antiforgery.ValidateRequestAsync(context);
+
+                // Видалення кукі
+                context.Response.Cookies.Delete(".AspNetCore.Identity.Application");
+
+                // Перезавантаження сторінки
                 return TypedResults.LocalRedirect($"~/{returnUrl}");
             });
+
+
 
             var manageGroup = accountGroup.MapGroup("/Manage").RequireAuthorization();
 

@@ -1,6 +1,7 @@
 ﻿@implements IDisposable
 
 @inject NavigationManager NavigationManager
+@inject IHttpContextAccessor HttpContextAccessor
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -89,4 +90,3 @@
         NavigationManager.LocationChanged -= OnLocationChanged;
     }
 }
-
