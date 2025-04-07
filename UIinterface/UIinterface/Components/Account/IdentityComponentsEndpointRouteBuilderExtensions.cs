@@ -41,22 +41,28 @@ namespace Microsoft.AspNetCore.Routing
                 return TypedResults.Challenge(properties, [provider]);
             });
 
-            accountGroup.MapPost("/Logout", async (
-                HttpContext context,
-                ClaimsPrincipal user,
-                [FromServices] IAntiforgery antiforgery,
-                [FromForm] string returnUrl) =>
+            /* accountGroup.MapPost("/Logout", async (
+                 HttpContext context,
+                 ClaimsPrincipal user,
+                 [FromServices] IAntiforgery antiforgery,
+                 [FromForm] string returnUrl) =>
+             {
+                 // Validate the antiforgery token
+                 await antiforgery.ValidateRequestAsync(context);
+
+                 // Видалення кукі
+                 context.Response.Cookies.Delete(".AspNetCore.Identity.Application");
+
+                 // Перезавантаження сторінки
+                 return TypedResults.LocalRedirect($"~/{returnUrl}");
+             });
+            */
+
+            accountGroup.MapGet("/Logout", (HttpContext context, [FromQuery] string returnUrl) =>
             {
-                // Validate the antiforgery token
-                await antiforgery.ValidateRequestAsync(context);
-
-                // Видалення кукі
                 context.Response.Cookies.Delete(".AspNetCore.Identity.Application");
-
-                // Перезавантаження сторінки
                 return TypedResults.LocalRedirect($"~/{returnUrl}");
             });
-
 
 
             var manageGroup = accountGroup.MapGroup("/Manage").RequireAuthorization();
