@@ -35,7 +35,9 @@ namespace UIinterface
             builder.Services.AddScoped<IBaseService<ToolTypeDto>, BaseService<ToolType, ToolTypeDto>>();
             builder.Services.AddScoped<IBaseService<WorkerDto>, BaseService<Worker, WorkerDto>>();
 
+            // Реєстрація сервісів
             builder.Services.AddScoped<LocationService>();
+            builder.Services.AddScoped<BossService>();
 
             // Реєстрація BaseRepository для кожної сутності
             builder.Services.AddScoped<BaseRepository<Brand>>();
@@ -125,16 +127,16 @@ namespace UIinterface
 
 
             // GOOGLE AUTH
-            builder.Services.AddAuthentication()
+           /* builder.Services.AddAuthentication()
                 .AddGoogle(options =>
                 {
                     options.ClientId = builder.Configuration["Google:ClientId"];
                     options.ClientSecret = builder.Configuration["Google:ClientSecret"];
                     options.CallbackPath = "/signin-google"; // Додайте цей рядок, якщо він відсутній
-                });
+                });*/
 
             var app = builder.Build();
-            app.UseAntiforgery();
+            //app.UseAntiforgery();
 
             if (app.Environment.IsDevelopment())
             {
