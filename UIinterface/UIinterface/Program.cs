@@ -115,16 +115,8 @@ namespace UIinterface
 
             builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
-            // Додайте налаштування антифальсифікації
-            builder.Services.AddAntiforgery(options =>
-            {
-                options.HeaderName = "X-CSRF-TOKEN";
-                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-            });
-
             // Додайте реєстрацію HttpContextAccessor
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-
 
             // GOOGLE AUTH
            /* builder.Services.AddAuthentication()
@@ -136,7 +128,7 @@ namespace UIinterface
                 });*/
 
             var app = builder.Build();
-            //app.UseAntiforgery();
+            app.UseAntiforgery();
 
             if (app.Environment.IsDevelopment())
             {
@@ -157,7 +149,6 @@ namespace UIinterface
             }
 
             app.UseHttpsRedirection();
-            app.UseAntiforgery();
 
             app.UseAuthentication();
             app.UseAuthorization();
@@ -168,9 +159,8 @@ namespace UIinterface
 
             // Add Identity endpoints.
             app.MapAdditionalIdentityEndpoints();
-
+            app.UseAntiforgery();
             app.Run();
         }
     }
 }
-
