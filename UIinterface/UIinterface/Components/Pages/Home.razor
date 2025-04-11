@@ -17,3 +17,12 @@
         Navigation.NavigateTo("/locations");
     }
 }
+
+
+<button class="btn btn-primary" @onclick="NavigateToBoss">Go to Boss</button>
+@code {
+    private void NavigateToBoss()
+    {
+        Navigation.NavigateTo("/bosses");
+    }
+}

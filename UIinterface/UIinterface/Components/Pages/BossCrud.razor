@@ -1,0 +1,72 @@
+﻿@page "/bosses"
+@using Core.DTOs
+@using UIinterface.Services
+@inject BossService BossService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Bosses</PageTitle>
+
+<h3>Bosses</h3>
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var boss in bosses)
+            {
+                <tr>
+                    <td>@boss.FirstName</td>
+                    <td>@boss.LastName</td>
+                    <td>@boss.Email</td>
+                    <td>@boss.Phone</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => EditBoss(boss.Id)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteBoss(boss.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button class="btn btn-primary" @onclick="AddBoss">Add New Boss</button>
+}
+
+@code {
+    private List<BossDto> bosses = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        bosses = (await BossService.GetAllAsync()).ToList();
+        isLoading = false;
+    }
+
+    private void AddBoss()
+    {
+        Navigation.NavigateTo("/add-boss");
+    }
+
+    private void EditBoss(int id)
+    {
+        Navigation.NavigateTo($"/edit-boss/{id}");
+    }
+
+    private async Task DeleteBoss(int id)
+    {
+        await BossService.DeleteAsync(id);
+        bosses = (await BossService.GetAllAsync()).ToList();
+    }
+}
