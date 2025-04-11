@@ -1,19 +1,18 @@
 ﻿@inherits LayoutComponentBase
+@using UIinterface.Components.Account.Shared
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
+<div class="d-flex flex-column min-vh-100"> <!-- Додаємо flexbox -->
+    <Header /> <!-- Хедер з інтегрованим меню -->
+
+    <div class="flex-grow-1"> <!-- Контент займає весь доступний простір -->
+        <main>
+            <article class="content px-4">
+                @Body
+            </article>
+        </main>
     </div>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
+    <Footer /> <!-- Футер прикріплений знизу -->
 </div>
 
 <div id="blazor-error-ui" data-nosnippet>

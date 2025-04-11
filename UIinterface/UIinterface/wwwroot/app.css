@@ -58,3 +58,81 @@ h1:focus {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #000000; /* Колір фону хедера */
+    color: white;
+}
+
+    header .nav {
+        display: flex;
+        gap: 1rem; /* Відстань між пунктами меню */
+        align-items: center; /* Вирівнювання кнопок по центру */
+    }
+
+    header .nav-link, header .btn-link {
+        text-decoration: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+        transition: background-color 0.3s ease;
+    }
+
+        header .nav-link:hover, header .btn-link:hover {
+            background-color: #1861ac; /* Колір при наведенні */
+            text-decoration: none;
+        }
+
+    header .btn-link {
+        border: none;
+        background: none;
+        cursor: pointer;
+    }
+
+.logo {
+    height: 80px; /* Висота логотипа */
+    width: auto; /* Автоматична ширина для збереження пропорцій */
+    margin-right: 1rem; /* Відступ праворуч */
+    border-radius: 50% /* Закруглені кути */
+}
+.custom-button {
+    background-color: #ff5733; /* Помаранчевий колір */
+    color: white; /* Білий текст */
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+    .custom-button:hover {
+        background-color: #e74c3c; /* Темніший помаранчевий при наведенні */
+    }
+
+
+footer {
+    background-color: #000000; /* Колір фону футера */
+    color: white; /* Колір тексту */
+    text-align: center;
+    padding: 1rem;
+}
+
+.d-flex {
+    display: flex;
+}
+
+.flex-column {
+    flex-direction: column;
+}
+
+.flex-grow-1 {
+    flex-grow: 1; /* Контент займає весь доступний простір */
+}
+
+.min-vh-100 {
+    min-height: 100vh; /* Мінімальна висота сторінки */
+}
