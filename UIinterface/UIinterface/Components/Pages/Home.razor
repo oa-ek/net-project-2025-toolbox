@@ -26,3 +26,21 @@
         Navigation.NavigateTo("/bosses");
     }
 }
+
+<button class="btn btn-primary" @onclick="NavigateToSystemAdmin">Go to System Admin</button>
+@code {
+    private void NavigateToSystemAdmin()
+    {
+        Navigation.NavigateTo("/systemadmins");
+    }
+}
+
+
+
+<button class="btn btn-primary" @onclick="NavigateToPosition">Go to Positions</button>
+@code {
+    private void NavigateToPosition()
+    {
+        Navigation.NavigateTo("/positions");
+    }
+}

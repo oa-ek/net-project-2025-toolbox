@@ -22,11 +22,25 @@ namespace Repository
             _dbSet = _context.Set<T>();
         }
 
+        public TTContext Context => _context;
+
         public async Task CreateAsync(T entity)
         {
-            await _dbSet.AddAsync(entity);
+            var keyProperty = _context.Model.FindEntityType(typeof(T)).FindPrimaryKey().Properties[0];
+            var keyValue = keyProperty.PropertyInfo.GetValue(entity);
+
+            var existingEntity = await _dbSet.FindAsync(keyValue);
+            if (existingEntity != null)
+            {
+                _context.Entry(existingEntity).State = EntityState.Detached;
+            }
+            _context.Entry(entity).State = EntityState.Added;
             await SaveChangesAsync();
         }
+
+
+
+
 
         public async Task<IEnumerable<T>> GetAsync()
         {
@@ -76,3 +90,7 @@ namespace Repository
     }
 
 }
+
+
+
+

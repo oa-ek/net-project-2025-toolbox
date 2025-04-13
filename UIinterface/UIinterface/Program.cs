@@ -9,7 +9,6 @@ using Core.Mappings;
 using Core.DTOs;
 using Repository;
 using UIinterface.Services;
-using UIinterface.Controlers;
 
 namespace UIinterface
 {
@@ -38,6 +37,21 @@ namespace UIinterface
             // Реєстрація сервісів
             builder.Services.AddScoped<LocationService>();
             builder.Services.AddScoped<BossService>();
+            builder.Services.AddScoped<SystemAdminService>();
+            builder.Services.AddScoped<WorkerService>();
+            builder.Services.AddScoped<PositionService>();
+            builder.Services.AddScoped<HandToolService>();
+            builder.Services.AddScoped<PowerToolService>();
+            builder.Services.AddScoped<PowerSupplyTypeService>();
+            builder.Services.AddScoped<BrandService>();
+            builder.Services.AddScoped<BataryService>();
+            builder.Services.AddScoped<BataryModelService>();
+            builder.Services.AddScoped<ConditionService>();
+            builder.Services.AddScoped<ToolModelService>();
+            builder.Services.AddScoped<ToolTypeService>();
+            builder.Services.AddScoped<PowerToolService>();
+
+
 
             // Реєстрація BaseRepository для кожної сутності
             builder.Services.AddScoped<BaseRepository<Brand>>();
@@ -99,7 +113,7 @@ namespace UIinterface
 
             // Register main DbContext for app data
             builder.Services.AddDbContext<TTContext>(options =>
-                options.UseSqlServer(connectionString));
+                options.UseSqlServer(connectionString)); // Додаємо розділення запитів
 
             // Register ApplicationDbContext for Identity
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -119,13 +133,13 @@ namespace UIinterface
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             // GOOGLE AUTH
-           /* builder.Services.AddAuthentication()
-                .AddGoogle(options =>
-                {
-                    options.ClientId = builder.Configuration["Google:ClientId"];
-                    options.ClientSecret = builder.Configuration["Google:ClientSecret"];
-                    options.CallbackPath = "/signin-google"; // Додайте цей рядок, якщо він відсутній
-                });*/
+            /* builder.Services.AddAuthentication()
+                 .AddGoogle(options =>
+                 {
+                     options.ClientId = builder.Configuration["Google:ClientId"];
+                     options.ClientSecret = builder.Configuration["Google:ClientSecret"];
+                     options.CallbackPath = "/signin-google"; // Додайте цей рядок, якщо він відсутній
+                 });*/
 
             var app = builder.Build();
             app.UseAntiforgery();
@@ -164,3 +178,4 @@ namespace UIinterface
         }
     }
 }
+

@@ -15,9 +15,8 @@ namespace Core
         public string Description { get; set; }
         public double Latitute { get; set; }
         public double Longitute { get; set; }
-
-        // navigation property
-        public IEnumerable<Worker> Workers { get; set; }
-        public IEnumerable<Boss> Bosses { get; set; }
+        // navigation properties
+        public ICollection<Boss> Bosses { get; set; } = new List<Boss>();
+        public ICollection<Worker> Workers { get; set; } = new List<Worker>();
     }
 }
