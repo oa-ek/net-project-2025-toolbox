@@ -101,3 +101,11 @@
 		Navigation.NavigateTo("/powersupplytypes");
 	}
 }
+
+<a class="btn btn-primary" @onclick="NavigateToHandTools">Go to Hand Tools</a>
+@code {
+	private void NavigateToHandTools()
+	{
+		Navigation.NavigateTo("/handtools");
+	}
+}
