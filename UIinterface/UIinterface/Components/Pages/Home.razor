@@ -44,3 +44,60 @@
         Navigation.NavigateTo("/positions");
     }
 }
+
+<button class="btn btn-primary" @onclick="NavigateToWorkersList">Go to Workers</button>
+@code {
+    private void NavigateToWorkersList()
+    {
+        Navigation.NavigateTo("/workers");
+    }
+}
+
+<button class="btn btn-primary" @onclick="NavigateToBrands">Go to Brands</button>
+@code {
+    private void NavigateToBrands()
+    {
+        Navigation.NavigateTo("/brands");
+    }
+}
+
+
+<button class="btn btn-primary" @onclick="NavigateToToolTypes">Go to Tool Types</button>
+@code {
+    private void NavigateToToolTypes()
+    {
+        Navigation.NavigateTo("/tooltypes");
+    }
+}
+
+<button class="btn btn-primary" @onclick="NavigateToToolModels">Go to Tool Models</button>
+@code {
+	private void NavigateToToolModels()
+	{
+		Navigation.NavigateTo("/toolmodels");
+	}
+}
+
+<button class="btn btn-primary" @onclick="NavigateToConditions">Go to Conditions</button>
+@code {
+	private void NavigateToConditions()
+	{
+		Navigation.NavigateTo("/conditions");
+	}
+}
+
+<button class="btn btn-primary" @onclick="NavigateBataryModel">Go to Batary Model</button>
+@code {
+	private void NavigateBataryModel()
+	{
+		Navigation.NavigateTo("/batarymodels");
+	}
+}
+
+<button class="btn btn-primary" @onclick="NavigateToPowerSypplyType">Go to Power Sypply Type</button>
+@code {
+	private void NavigateToPowerSypplyType()
+	{
+		Navigation.NavigateTo("/powersupplytypes");
+	}
+}

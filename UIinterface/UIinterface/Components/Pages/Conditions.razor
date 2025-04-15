@@ -1,0 +1,112 @@
+﻿@page "/conditions"
+@using Core.DTOs
+@using UIinterface.Services
+@inject ConditionService ConditionService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Conditions</PageTitle>
+
+<h3>Conditions</h3>
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var condition in conditions)
+            {
+                <tr>
+                    <td>@condition.Name</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => EditCondition(condition.Id)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteCondition(condition.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button class="btn btn-primary" @onclick="AddCondition">Add New Condition</button>
+}
+
+@if (isEditing || isAdding)
+{
+    <EditForm Model="condition" OnValidSubmit="SaveCondition">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <InputText id="name" class="form-control" @bind-Value="condition.Name" />
+            <ValidationMessage For="@(() => condition.Name)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    </EditForm>
+}
+
+@code {
+    private List<ConditionDto> conditions = new();
+    private ConditionDto condition = new ConditionDto();
+    private bool isLoading = true;
+    private bool isEditing = false;
+    private bool isAdding = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        conditions = (await ConditionService.GetAllAsync()).ToList();
+        isLoading = false;
+    }
+
+    private void AddCondition()
+    {
+        condition = new ConditionDto();
+        isAdding = true;
+        isEditing = false;
+    }
+
+    private async Task EditCondition(int id)
+    {
+        condition = await ConditionService.GetByIdAsync(id);
+        isEditing = true;
+        isAdding = false;
+    }
+
+    private async Task SaveCondition()
+    {
+        if (isEditing)
+        {
+            await ConditionService.UpdateAsync(condition.Id, condition);
+        }
+        else if (isAdding)
+        {
+            await ConditionService.AddAsync(condition);
+        }
+
+        conditions = (await ConditionService.GetAllAsync()).ToList();
+        isEditing = false;
+        isAdding = false;
+    }
+
+    private async Task DeleteCondition(int id)
+    {
+        await ConditionService.DeleteAsync(id);
+        conditions = (await ConditionService.GetAllAsync()).ToList();
+    }
+
+    private void Cancel()
+    {
+        isEditing = false;
+        isAdding = false;
+    }
+}

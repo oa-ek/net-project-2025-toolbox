@@ -1,0 +1,129 @@
+﻿@page "/batarymodels"
+@using Core.DTOs
+@using UIinterface.Services
+@inject BataryModelService BataryModelService
+@inject BrandService BrandService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Batary Models</PageTitle>
+
+<h3>Batary Models</h3>
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Brand</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var bataryModel in bataryModels)
+            {
+                <tr>
+                    <td>@bataryModel.Name</td>
+                    <td>@brands.FirstOrDefault(b => b.Id == bataryModel.BrandId)?.Name</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => EditBataryModel(bataryModel.Id)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteBataryModel(bataryModel.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button class="btn btn-primary" @onclick="AddBataryModel">Add New Batary Model</button>
+}
+
+@if (isEditing || isAdding)
+{
+    <EditForm Model="bataryModel" OnValidSubmit="SaveBataryModel">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <InputText id="name" class="form-control" @bind-Value="bataryModel.Name" />
+            <ValidationMessage For="@(() => bataryModel.Name)" />
+        </div>
+        <div class="mb-3">
+            <label for="brandId" class="form-label">Brand</label>
+            <InputSelect id="brandId" class="form-control" @bind-Value="bataryModel.BrandId">
+                <option value="">Select a brand</option>
+                @foreach (var brand in brands)
+                {
+                    <option value="@brand.Id">@brand.Name</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => bataryModel.BrandId)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    </EditForm>
+}
+
+@code {
+    private List<BataryModelDto> bataryModels = new();
+    private BataryModelDto bataryModel = new BataryModelDto();
+    private List<BrandDto> brands = new();
+    private bool isLoading = true;
+    private bool isEditing = false;
+    private bool isAdding = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        bataryModels = (await BataryModelService.GetAllAsync()).ToList();
+        brands = (await BrandService.GetAllAsync()).ToList();
+        isLoading = false;
+    }
+
+    private void AddBataryModel()
+    {
+        bataryModel = new BataryModelDto();
+        isAdding = true;
+        isEditing = false;
+    }
+
+    private async Task EditBataryModel(int id)
+    {
+        bataryModel = await BataryModelService.GetByIdAsync(id);
+        isEditing = true;
+        isAdding = false;
+    }
+
+    private async Task SaveBataryModel()
+    {
+        if (isEditing)
+        {
+            await BataryModelService.UpdateAsync(bataryModel.Id, bataryModel);
+        }
+        else if (isAdding)
+        {
+            await BataryModelService.AddAsync(bataryModel);
+        }
+
+        bataryModels = (await BataryModelService.GetAllAsync()).ToList();
+        isEditing = false;
+        isAdding = false;
+    }
+
+    private async Task DeleteBataryModel(int id)
+    {
+        await BataryModelService.DeleteAsync(id);
+        bataryModels = (await BataryModelService.GetAllAsync()).ToList();
+    }
+
+    private void Cancel()
+    {
+        isEditing = false;
+        isAdding = false;
+    }
+}
+
