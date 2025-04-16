@@ -119,13 +119,13 @@ namespace UIinterface
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             // GOOGLE AUTH
-           /* builder.Services.AddAuthentication()
+           builder.Services.AddAuthentication()
                 .AddGoogle(options =>
                 {
                     options.ClientId = builder.Configuration["Google:ClientId"];
                     options.ClientSecret = builder.Configuration["Google:ClientSecret"];
                     options.CallbackPath = "/signin-google"; // Додайте цей рядок, якщо він відсутній
-                });*/
+                });
 
             var app = builder.Build();
             app.UseAntiforgery();
