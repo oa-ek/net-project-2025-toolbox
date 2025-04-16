@@ -1,28 +1,35 @@
 ﻿@page "/"
 @rendermode InteractiveServer
 
-@inject NavigationManager Navigation
+<PageTitle>ToolTrack</PageTitle>
+<div class="info-section">
 
-<PageTitle>Home</PageTitle>
+    <h1 class="hero-title">ToolTrack</h1>
+    <p class="hero-description">
+        A modern system for tracking and managing tools, locations, and employees in your organization.
+    </p>
 
-<h1>Вітаємо у сервісі ToolTrack</h1>
-
-<button class="custom-button" @onclick="NavigateToLocation">Go to Locations</button>
-
-
-
-@code {
-    private void NavigateToLocation()
-    {
-        Navigation.NavigateTo("/locations");
-    }
-}
-
-
-<button class="btn btn-primary" @onclick="NavigateToBoss">Go to Boss</button>
-@code {
-    private void NavigateToBoss()
-    {
-        Navigation.NavigateTo("/bosses");
-    }
-}
+    <h2>Features of ToolTrack</h2>
+    <div class="features-cards">
+        <div class="card">
+            <div class="card-icon">🧰</div>
+            <h3>Tool Inventory</h3>
+            <p>Keep track of all tools in your organization, including their current status and location.</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">📍</div>
+            <h3>Location Management</h3>
+            <p>Assign tools to specific locations and monitor their movement between departments or sites.</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">👷</div>
+            <h3>Employee Tracking</h3>
+            <p>Manage employees and assign tools to them for accountability and better resource management.</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">📊</div>
+            <h3>Usage History</h3>
+            <p>View detailed usage history of tools, including who used them and when.</p>
+        </div>
+    </div>
+</div>

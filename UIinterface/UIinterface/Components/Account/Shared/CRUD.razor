@@ -1,7 +1,12 @@
 ﻿@page "/admin"
+@rendermode InteractiveServer
 @inject NavigationManager Navigation
 
-<PageTitle>Admin Panel</PageTitle>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sunflower:wght@300&display=swap" rel="stylesheet">
+
+<PageTitle>Anmin panel</PageTitle>
 
 <div class="admin-panel">
     <h1 class="admin-title">Admin Panel</h1>
@@ -17,9 +22,15 @@
     {
         Navigation.NavigateTo("/locations");
     }
+    }
 
+    @code {
     private void NavigateToBoss()
     {
         Navigation.NavigateTo("/bosses");
     }
-}
+    }
+
+
+
+
