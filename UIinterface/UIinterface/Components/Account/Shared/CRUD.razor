@@ -1,31 +1,25 @@
-﻿@page "/crud"
-@rendermode InteractiveServer
-
+﻿@page "/admin"
 @inject NavigationManager Navigation
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sunflower:wght@300&display=swap" rel="stylesheet">
+<PageTitle>Admin Panel</PageTitle>
 
-<PageTitle>CRUD</PageTitle>
+<div class="admin-panel">
+    <h1 class="admin-title">Admin Panel</h1>
 
-<h1 class="crud-h1">Admin panel</h1>
+    <div class="admin-buttons">
+        <button class="custom-button" @onclick="NavigateToLocation">Go to Locations</button>
+        <button class="custom-button" @onclick="NavigateToBoss">Go to Boss</button>
+    </div>
+</div>
 
-<section class="crud-sect">
-    <button class="custom-button" @onclick="NavigateToLocation">Go to Locations</button>
-    @code {
-        private void NavigateToLocation()
-        {
-            Navigation.NavigateTo("/locations");
-        }
+@code {
+    private void NavigateToLocation()
+    {
+        Navigation.NavigateTo("/locations");
     }
 
-
-    <button class="custom-button" @onclick="NavigateToBoss">Go to Boss</button>
-    @code {
-        private void NavigateToBoss()
-        {
-            Navigation.NavigateTo("/bosses");
-        }
+    private void NavigateToBoss()
+    {
+        Navigation.NavigateTo("/bosses");
     }
-</section>
+}
