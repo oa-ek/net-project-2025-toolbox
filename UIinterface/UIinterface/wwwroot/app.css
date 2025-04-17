@@ -194,20 +194,20 @@ footer {
 /*ADMIN PANEL*/
 /* Загальний стиль для Admin Panel */
 .admin-panel {
-    max-width: 800px;
+    max-width: 1000px;
     margin: 50px auto;
     padding: 20px;
-    background-color: #f8f9fa; /* Світлий фон */
+    background-color: #f8f9fa;
     border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Тінь */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     text-align: center;
-    border: 1px solid #ced4da; /* Світла рамка */
+    border: 1px solid #ced4da;
 }
 
 /* Заголовок */
 .admin-title {
     font-size: 2rem;
-    color: #343a40; /* Темний текст */
+    color: #343a40;
     margin-bottom: 20px;
     font-weight: bold;
 }
@@ -215,13 +215,14 @@ footer {
 /* Кнопки */
 .admin-buttons {
     display: flex;
+    flex-wrap: wrap; /* Дозволяє переносити кнопки на новий рядок */
     justify-content: center;
     gap: 15px;
     margin-top: 20px;
 }
 
 .custom-button {
-    background-color: #e74c3c; /* Синій фон */
+    background-color: #e74c3c;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -230,18 +231,21 @@ footer {
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
+    min-width: 180px; /* Мінімальна ширина кнопки */
+    text-align: center;
 }
 
     .custom-button:hover {
-        background-color: #6f0000; /* Темніший синій при наведенні */
-        transform: scale(1.05); /* Легке збільшення */
+        background-color: #6f0000;
+        transform: scale(1.05);
     }
 
     .custom-button:active {
-        background-color: #570000; /* Ще темніший синій при натисканні */
-        transform: scale(0.95); /* Легке зменшення */
+        background-color: #570000;
+        transform: scale(0.95);
     }
 /*ADMIN PANEL*/
+
 
 /*Home page*/
 /* Hero Section */
