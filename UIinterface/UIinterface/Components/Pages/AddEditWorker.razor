@@ -3,6 +3,8 @@
 @using UIinterface.Services
 @inject WorkerService WorkerService
 @inject PositionService PositionService
+@inject BossService BossService
+@inject LocationService LocationService
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 
@@ -20,36 +22,82 @@ else
         <DataAnnotationsValidator />
         <ValidationSummary />
 
-        <div class="mb-3">
-            <label for="firstName" class="form-label">First Name</label>
-            <InputText id="firstName" class="form-control" @bind-Value="worker.FirstName" />
-            <ValidationMessage For="@(() => worker.FirstName)" />
-        </div>
-        <div class="mb-3">
-            <label for="lastName" class="form-label">Last Name</label>
-            <InputText id="lastName" class="form-control" @bind-Value="worker.LastName" />
-            <ValidationMessage For="@(() => worker.LastName)" />
-        </div>
-        <div class="mb-3">
-            <label for="email" class="form-label">Email</label>
-            <InputText id="email" class="form-control" @bind-Value="worker.Email" />
-            <ValidationMessage For="@(() => worker.Email)" />
-        </div>
-        <div class="mb-3">
-            <label for="phone" class="form-label">Phone</label>
-            <InputText id="phone" class="form-control" @bind-Value="worker.Phone" />
-            <ValidationMessage For="@(() => worker.Phone)" />
-        </div>
-        <div class="mb-3">
-            <label for="positionId" class="form-label">Position</label>
-            <InputSelect id="positionId" class="form-control" @bind-Value="worker.PositionId">
-                <option value="">Select a position</option>
-                @foreach (var position in positions)
-                {
-                    <option value="@position.Id">@position.Name</option>
-                }
-            </InputSelect>
-            <ValidationMessage For="@(() => worker.PositionId)" />
+        <div class="row">
+            <!-- Перша колонка -->
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="firstName" class="form-label">First Name</label>
+                    <InputText id="firstName" class="form-control" @bind-Value="worker.FirstName" />
+                    <ValidationMessage For="@(() => worker.FirstName)" />
+                </div>
+                <div class="mb-3">
+                    <label for="lastName" class="form-label">Last Name</label>
+                    <InputText id="lastName" class="form-control" @bind-Value="worker.LastName" />
+                    <ValidationMessage For="@(() => worker.LastName)" />
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <InputText id="email" class="form-control" @bind-Value="worker.Email" />
+                    <ValidationMessage For="@(() => worker.Email)" />
+                </div>
+                <div class="mb-3">
+                    <label for="phone" class="form-label">Phone</label>
+                    <InputText id="phone" class="form-control" @bind-Value="worker.Phone" />
+                    <ValidationMessage For="@(() => worker.Phone)" />
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <InputText id="password" class="form-control" @bind-Value="worker.Password" type="password" />
+                    <ValidationMessage For="@(() => worker.Password)" />
+                </div>
+            </div>
+
+            <!-- Друга колонка -->
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="locationId" class="form-label">Location</label>
+                    <InputSelect id="locationId" class="form-control" @bind-Value="worker.LocationId">
+                        <option value="">Select a location</option>
+                        @foreach (var location in locations)
+                        {
+                            <option value="@location.Id">@location.Name</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => worker.LocationId)" />
+                </div>
+                <div class="mb-3">
+                    <label for="positionId" class="form-label">Position</label>
+                    <InputSelect id="positionId" class="form-control" @bind-Value="worker.PositionId">
+                        <option value="">Select a position</option>
+                        @foreach (var position in positions)
+                        {
+                            <option value="@position.Id">@position.Name</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => worker.PositionId)" />
+                </div>
+                <div class="mb-3">
+                    <label for="bossId" class="form-label">Boss</label>
+                    <InputSelect id="bossId" class="form-control" @bind-Value="worker.BossId">
+                        <option value="">Select a boss</option>
+                        @foreach (var boss in bosses)
+                        {
+                            <option value="@boss.Id">@boss.FirstName @boss.LastName</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => worker.BossId)" />
+                </div>
+                <div class="mb-3">
+                    <label for="latitute" class="form-label">Latitude</label>
+                    <InputNumber id="latitute" class="form-control" @bind-Value="worker.Latitute" />
+                    <ValidationMessage For="@(() => worker.Latitute)" />
+                </div>
+                <div class="mb-3">
+                    <label for="longitute" class="form-label">Longitude</label>
+                    <InputNumber id="longitute" class="form-control" @bind-Value="worker.Longitute" />
+                    <ValidationMessage For="@(() => worker.Longitute)" />
+                </div>
+            </div>
         </div>
 
         <button type="submit" class="btn btn-primary">Save</button>
@@ -64,13 +112,18 @@ else
 @code {
     [Parameter] public int? WorkerId { get; set; }
     private WorkerDto worker = new WorkerDto();
+    private List<LocationDto> locations = new List<LocationDto>();
     private List<PositionDto> positions = new List<PositionDto>();
+    private List<BossDto> bosses = new List<BossDto>();
     private bool isLoading = true;
     private bool isEditing = false;
 
     protected override async Task OnInitializedAsync()
     {
+        locations = (await LocationService.GetAllAsync()).ToList();
         positions = (await PositionService.GetAllAsync()).ToList();
+        bosses = (await BossService.GetAllAsync()).ToList();
+
         if (WorkerId.HasValue)
         {
             worker = await WorkerService.GetByIdAsync(WorkerId.Value);

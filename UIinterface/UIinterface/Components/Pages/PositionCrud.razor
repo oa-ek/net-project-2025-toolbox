@@ -54,11 +54,13 @@ else
             <InputText id="name" class="form-control" @bind-Value="position.Name" />
             <ValidationMessage For="@(() => position.Name)" />
         </div>
+
         <div class="mb-3">
             <label for="salaryPerHour" class="form-label">Salary Per Hour</label>
             <InputNumber id="salaryPerHour" class="form-control" @bind-Value="position.SalaryPerHour" />
             <ValidationMessage For="@(() => position.SalaryPerHour)" />
         </div>
+
         <div class="mb-3">
             <label for="bossId" class="form-label">Boss</label>
             <InputSelect id="bossId" class="form-control" @bind-Value="position.BossId">
@@ -93,10 +95,16 @@ else
 
     private void AddPosition()
     {
-        position = new PositionDto();
+        position = new PositionDto
+            {
+                Name = string.Empty,        
+                SalaryPerHour = 1,
+                BossId = bosses.FirstOrDefault()?.Id ?? 0
+            };
         isAdding = true;
         isEditing = false;
     }
+
 
     private async Task EditPosition(int id)
     {
@@ -107,19 +115,25 @@ else
 
     private async Task SavePosition()
     {
+        Console.WriteLine($"Name: '{position.Name}'");
+        Console.WriteLine($"Salary: {position.SalaryPerHour}");
+        Console.WriteLine($"BossId: {position.BossId}");
+
+        if (string.IsNullOrWhiteSpace(position.Name))
+        {
+            Console.WriteLine("⚠️ Position Name is null or empty!");
+        }
+
         if (isEditing)
-        {
             await PositionService.UpdateAsync(position.Id, position);
-        }
         else if (isAdding)
-        {
             await PositionService.AddAsync(position);
-        }
 
         positions = (await PositionService.GetAllAsync()).ToList();
         isEditing = false;
         isAdding = false;
     }
+
 
     private async Task DeletePosition(int id)
     {

@@ -15,7 +15,7 @@ namespace Core.DTOs
         public int SalaryPerHour { get; set; }
 
         [Required(ErrorMessage = "Boss is required")]
-        public int BossId { get; set; }
+        public int? BossId { get; set; }
 
         public string BossName { get; set; }
     }

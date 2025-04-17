@@ -51,48 +51,27 @@ namespace UIinterface.Services
                 using (var scope = _serviceScopeFactory.CreateScope())
                 {
                     var context = scope.ServiceProvider.GetRequiredService<TTContext>();
+
+                    // Логування вхідних даних
+                    _logger.LogInformation($"Adding worker: {dto.FirstName} {dto.LastName}, LocationId: {dto.LocationId}, BossId: {dto.BossId}");
+
+                    // Перевірка, чи існує LocationId
+                    if (!await context.Locations.AnyAsync(l => l.Id == dto.LocationId))
+                    {
+                        throw new ArgumentException($"Location with Id {dto.LocationId} does not exist.");
+                    }
+
+                    // Перевірка, чи існує BossId
+                    if (!await context.Bosses.AnyAsync(b => b.Id == dto.BossId))
+                    {
+                        throw new ArgumentException($"Boss with Id {dto.BossId} does not exist.");
+                    }
+
+                    // Мапінг DTO на сутність Worker
                     var entity = _mapper.Map<Worker>(dto);
 
-                    // Ensure all required properties are set
-                    if (string.IsNullOrEmpty(entity.FirstName))
-                    {
-                        entity.FirstName = "Default FirstName"; // Set a default value or handle accordingly
-                    }
-                    if (string.IsNullOrEmpty(entity.LastName))
-                    {
-                        entity.LastName = "Default LastName"; // Set a default value or handle accordingly
-                    }
-                    if (string.IsNullOrEmpty(entity.Email))
-                    {
-                        entity.Email = "default@example.com"; // Set a default value or handle accordingly
-                    }
-                    if (string.IsNullOrEmpty(entity.Phone))
-                    {
-                        entity.Phone = "000-000-0000"; // Set a default value or handle accordingly
-                    }
-                    if (string.IsNullOrEmpty(entity.Password))
-                    {
-                        entity.Password = "DefaultPassword"; // Set a default value or handle accordingly
-                    }
-
-                    // Ensure the Description and Name properties are set for Location
-                    if (entity.Location != null)
-                    {
-                        if (string.IsNullOrEmpty(entity.Location.Description))
-                        {
-                            entity.Location.Description = "Default Description";
-                        }
-                        if (string.IsNullOrEmpty(entity.Location.Name))
-                        {
-                            entity.Location.Name = "Default Name"; // Set a default value or handle accordingly
-                        }
-                    }
-
-                    // Ensure the Name property is set for Position
-                    if (entity.Position != null && string.IsNullOrEmpty(entity.Position.Name))
-                    {
-                        entity.Position.Name = "Default Position Name"; // Set a default value or handle accordingly
-                    }
+                    // Уникаємо створення нового Location
+                    entity.Location = null;
 
                     context.Workers.Add(entity);
                     await context.SaveChangesAsync();
@@ -105,6 +84,7 @@ namespace UIinterface.Services
                 throw;
             }
         }
+
 
         public override async Task<bool> DeleteAsync(int id)
         {

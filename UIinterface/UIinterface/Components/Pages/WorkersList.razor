@@ -9,11 +9,6 @@
 
 <h3>Workers</h3>
 
-<div class="mb-3">
-    <label for="search" class="form-label">Search</label>
-    <InputText id="search" class="form-control" @bind-Value="searchTerm" @oninput="SearchWorkers" />
-</div>
-
 @if (isLoading)
 {
     <p>Loading...</p>
@@ -27,6 +22,7 @@ else
                 <th>Last Name</th>
                 <th>Email</th>
                 <th>Phone</th>
+                <th>Position</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -38,8 +34,10 @@ else
                     <td>@worker.LastName</td>
                     <td>@worker.Email</td>
                     <td>@worker.Phone</td>
+                    <td>@worker.PositionName</td>
                     <td>
                         <button class="btn btn-primary" @onclick="() => EditWorker(worker.Id)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteWorker(worker.Id)">Delete</button>
                     </td>
                 </tr>
             }
@@ -49,27 +47,13 @@ else
 }
 
 @code {
-    private List<WorkerDto> workers = new();
-    private string searchTerm = string.Empty;
+    private List<WorkerDto> workers = new List<WorkerDto>();
     private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
         workers = (await WorkerService.GetAllAsync()).ToList();
         isLoading = false;
-    }
-
-    private async Task SearchWorkers(ChangeEventArgs e)
-    {
-        searchTerm = e.Value.ToString();
-        if (string.IsNullOrEmpty(searchTerm))
-        {
-            workers = (await WorkerService.GetAllAsync()).ToList();
-        }
-        else
-        {
-            workers = (await WorkerService.SearchAsync(searchTerm)).ToList();
-        }
     }
 
     private void AddWorker()
@@ -80,5 +64,11 @@ else
     private void EditWorker(int id)
     {
         Navigation.NavigateTo($"/add-edit-worker/{id}");
+    }
+
+    private async Task DeleteWorker(int id)
+    {
+        await WorkerService.DeleteAsync(id);
+        workers = (await WorkerService.GetAllAsync()).ToList();
     }
 }
