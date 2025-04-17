@@ -109,3 +109,19 @@
 		Navigation.NavigateTo("/handtools");
 	}
 }
+
+<button class="btn btn-primary" @onclick="NavigateToPowerTools">Go to Power Tools</button>
+@code {
+	private void NavigateToPowerTools()
+	{
+		Navigation.NavigateTo("/powertools");
+	}
+}
+
+<button class="btn btn-primary" @onclick="NavigateToBatary">Go to Batary</button>
+@code {
+	private void NavigateToBatary()
+	{
+		Navigation.NavigateTo("/bataries");
+	}
+}

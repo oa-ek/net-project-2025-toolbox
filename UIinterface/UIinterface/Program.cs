@@ -18,7 +18,7 @@ namespace UIinterface
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Додайте реєстрацію сервісів
+            
             builder.Services.AddScoped<IBaseService<BrandDto>, BaseService<Brand, BrandDto>>();
             builder.Services.AddScoped<IBaseService<BataryDto>, BaseService<Batary, BataryDto>>();
             builder.Services.AddScoped<IBaseService<BataryModelDto>, BaseService<BataryModel, BataryModelDto>>();
