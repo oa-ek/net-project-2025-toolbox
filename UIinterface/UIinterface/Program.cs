@@ -34,7 +34,7 @@ namespace UIinterface
             builder.Services.AddScoped<IBaseService<ToolTypeDto>, BaseService<ToolType, ToolTypeDto>>();
             builder.Services.AddScoped<IBaseService<WorkerDto>, BaseService<Worker, WorkerDto>>();
 
-            // Реєстрація сервісів
+            // ГђГҐВєГ±ГІГ°Г Г¶ВіГї Г±ГҐГ°ГўВіГ±ВіГў
             builder.Services.AddScoped<LocationService>();
             builder.Services.AddScoped<BossService>();
             builder.Services.AddScoped<SystemAdminService>();
@@ -53,7 +53,7 @@ namespace UIinterface
 
 
 
-            // Реєстрація BaseRepository для кожної сутності
+            // ГђГҐВєГ±ГІГ°Г Г¶ВіГї BaseRepository Г¤Г«Гї ГЄГ®Г¦Г­Г®Вї Г±ГіГІГ­Г®Г±ГІВі
             builder.Services.AddScoped<BaseRepository<Brand>>();
             builder.Services.AddScoped<BaseRepository<Batary>>();
             builder.Services.AddScoped<BaseRepository<BataryModel>>();
@@ -84,7 +84,7 @@ namespace UIinterface
                 .AddInteractiveServerComponents()
                 .AddAuthenticationStateSerialization();
 
-            // Додайте ці рядки для налаштування AuthenticationStateProvider та інших сервісів
+            // Г„Г®Г¤Г Г©ГІГҐ Г¶Ві Г°ГїГ¤ГЄГЁ Г¤Г«Гї Г­Г Г«Г ГёГІГіГўГ Г­Г­Гї AuthenticationStateProvider ГІГ  ВіГ­ГёГЁГµ Г±ГҐГ°ГўВіГ±ВіГў
             builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
             builder.Services.AddCascadingAuthenticationState();
             builder.Services.AddScoped<IdentityUserAccessor>();
@@ -113,7 +113,7 @@ namespace UIinterface
 
             // Register main DbContext for app data
             builder.Services.AddDbContext<TTContext>(options =>
-                options.UseSqlServer(connectionString)); // Додаємо розділення запитів
+                options.UseSqlServer(connectionString)); // Г„Г®Г¤Г ВєГ¬Г® Г°Г®Г§Г¤ВіГ«ГҐГ­Г­Гї Г§Г ГЇГЁГІВіГў
 
             // Register ApplicationDbContext for Identity
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -129,17 +129,19 @@ namespace UIinterface
 
             builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
-            // Додайте реєстрацію HttpContextAccessor
+            // Г„Г®Г¤Г Г©ГІГҐ Г°ГҐВєГ±ГІГ°Г Г¶ВіГѕ HttpContextAccessor
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             // GOOGLE AUTH
-            /* builder.Services.AddAuthentication()
-                 .AddGoogle(options =>
-                 {
-                     options.ClientId = builder.Configuration["Google:ClientId"];
-                     options.ClientSecret = builder.Configuration["Google:ClientSecret"];
-                     options.CallbackPath = "/signin-google"; // Додайте цей рядок, якщо він відсутній
-                 });*/
+
+           builder.Services.AddAuthentication()
+                .AddGoogle(options =>
+                {
+                    options.ClientId = builder.Configuration["Google:ClientId"];
+                    options.ClientSecret = builder.Configuration["Google:ClientSecret"];
+                    options.CallbackPath = "/signin-google"; // Г„Г®Г¤Г Г©ГІГҐ Г¶ГҐГ© Г°ГїГ¤Г®ГЄ, ГїГЄГ№Г® ГўВіГ­ ГўВіГ¤Г±ГіГІГ­ВіГ©
+                });
+
 
             var app = builder.Build();
             app.UseAntiforgery();
