@@ -9,16 +9,18 @@ namespace Core.Mappings
         {
             // Power Tools
             CreateMap<PowerTool, PowerToolDto>()
-     .ForMember(dest => dest.ConditionName, opt => opt.MapFrom(src => src.Condition.Name))
-     .ForMember(dest => dest.ToolTypeName, opt => opt.MapFrom(src => src.ToolType.Name))
-     .ForMember(dest => dest.LastWorkerId, opt => opt.MapFrom(src => src.LastWorkerId))
-     .ForMember(dest => dest.LastLocationId, opt => opt.MapFrom(src => src.LastLocationId));
+                .ForMember(dest => dest.ConditionName, opt => opt.MapFrom(src => src.Condition.Name))
+                .ForMember(dest => dest.ToolTypeName, opt => opt.MapFrom(src => src.ToolType.Name))
+                .ForMember(dest => dest.LastWorkerId, opt => opt.MapFrom(src => src.LastWorkerId))
+                .ForMember(dest => dest.LastLocationId, opt => opt.MapFrom(src => src.LastLocationId));
 
             CreateMap<PowerToolDto, PowerTool>()
                 .ForMember(dest => dest.Condition, opt => opt.Ignore()) // Уникаємо створення нового Condition
                 .ForMember(dest => dest.ToolType, opt => opt.Ignore()) // Уникаємо створення нового ToolType
                 .ForMember(dest => dest.LastWorker, opt => opt.Ignore()) // Уникаємо створення нового Worker
-                .ForMember(dest => dest.LastLocationId, opt => opt.MapFrom(src => src.LastLocationId));
+                .ForMember(dest => dest.LastWorkerId, opt => opt.MapFrom(src => src.LastWorkerId));
+
+
 
             CreateMap<PowerSupplyType, PowerSupplyTypeDto>().ReverseMap();
             CreateMap<ToolModel, ToolModelDto>().ReverseMap();
