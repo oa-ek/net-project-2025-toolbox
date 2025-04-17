@@ -5,9 +5,11 @@ using Repository;
 
 namespace UIinterface.Services
 {
-    public class BossService : BaseService<Boss, BossDto>, IBaseService<BossDto>
+    public class BossService : BaseService<Boss, BossDto>
     {
-        public BossService(RepositoryContainer repositoryContainer, IMapper mapper)
-            : base(repositoryContainer.BossRepository, mapper) { }
+        public BossService(BaseRepository<Boss> repository, IMapper mapper)
+            : base(repository, mapper)
+        {
+        }
     }
 }

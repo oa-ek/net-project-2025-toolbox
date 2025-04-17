@@ -9,7 +9,6 @@ using Core.Mappings;
 using Core.DTOs;
 using Repository;
 using UIinterface.Services;
-using UIinterface.Controlers;
 
 namespace UIinterface
 {
@@ -19,7 +18,7 @@ namespace UIinterface
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Додайте реєстрацію сервісів
+            
             builder.Services.AddScoped<IBaseService<BrandDto>, BaseService<Brand, BrandDto>>();
             builder.Services.AddScoped<IBaseService<BataryDto>, BaseService<Batary, BataryDto>>();
             builder.Services.AddScoped<IBaseService<BataryModelDto>, BaseService<BataryModel, BataryModelDto>>();
@@ -35,11 +34,26 @@ namespace UIinterface
             builder.Services.AddScoped<IBaseService<ToolTypeDto>, BaseService<ToolType, ToolTypeDto>>();
             builder.Services.AddScoped<IBaseService<WorkerDto>, BaseService<Worker, WorkerDto>>();
 
-            // Реєстрація сервісів
+            // ГђГҐВєГ±ГІГ°Г Г¶ВіГї Г±ГҐГ°ГўВіГ±ВіГў
             builder.Services.AddScoped<LocationService>();
             builder.Services.AddScoped<BossService>();
+            builder.Services.AddScoped<SystemAdminService>();
+            builder.Services.AddScoped<WorkerService>();
+            builder.Services.AddScoped<PositionService>();
+            builder.Services.AddScoped<HandToolService>();
+            builder.Services.AddScoped<PowerToolService>();
+            builder.Services.AddScoped<PowerSupplyTypeService>();
+            builder.Services.AddScoped<BrandService>();
+            builder.Services.AddScoped<BataryService>();
+            builder.Services.AddScoped<BataryModelService>();
+            builder.Services.AddScoped<ConditionService>();
+            builder.Services.AddScoped<ToolModelService>();
+            builder.Services.AddScoped<ToolTypeService>();
+            builder.Services.AddScoped<PowerToolService>();
 
-            // Реєстрація BaseRepository для кожної сутності
+
+
+            // ГђГҐВєГ±ГІГ°Г Г¶ВіГї BaseRepository Г¤Г«Гї ГЄГ®Г¦Г­Г®Вї Г±ГіГІГ­Г®Г±ГІВі
             builder.Services.AddScoped<BaseRepository<Brand>>();
             builder.Services.AddScoped<BaseRepository<Batary>>();
             builder.Services.AddScoped<BaseRepository<BataryModel>>();
@@ -70,7 +84,7 @@ namespace UIinterface
                 .AddInteractiveServerComponents()
                 .AddAuthenticationStateSerialization();
 
-            // Додайте ці рядки для налаштування AuthenticationStateProvider та інших сервісів
+            // Г„Г®Г¤Г Г©ГІГҐ Г¶Ві Г°ГїГ¤ГЄГЁ Г¤Г«Гї Г­Г Г«Г ГёГІГіГўГ Г­Г­Гї AuthenticationStateProvider ГІГ  ВіГ­ГёГЁГµ Г±ГҐГ°ГўВіГ±ВіГў
             builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
             builder.Services.AddCascadingAuthenticationState();
             builder.Services.AddScoped<IdentityUserAccessor>();
@@ -99,7 +113,7 @@ namespace UIinterface
 
             // Register main DbContext for app data
             builder.Services.AddDbContext<TTContext>(options =>
-                options.UseSqlServer(connectionString));
+                options.UseSqlServer(connectionString)); // Г„Г®Г¤Г ВєГ¬Г® Г°Г®Г§Г¤ВіГ«ГҐГ­Г­Гї Г§Г ГЇГЁГІВіГў
 
             // Register ApplicationDbContext for Identity
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -115,17 +129,19 @@ namespace UIinterface
 
             builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 
-            // Додайте реєстрацію HttpContextAccessor
+            // Г„Г®Г¤Г Г©ГІГҐ Г°ГҐВєГ±ГІГ°Г Г¶ВіГѕ HttpContextAccessor
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             // GOOGLE AUTH
+
            builder.Services.AddAuthentication()
                 .AddGoogle(options =>
                 {
                     options.ClientId = builder.Configuration["Google:ClientId"];
                     options.ClientSecret = builder.Configuration["Google:ClientSecret"];
-                    options.CallbackPath = "/signin-google"; // Додайте цей рядок, якщо він відсутній
+                    options.CallbackPath = "/signin-google"; // Г„Г®Г¤Г Г©ГІГҐ Г¶ГҐГ© Г°ГїГ¤Г®ГЄ, ГїГЄГ№Г® ГўВіГ­ ГўВіГ¤Г±ГіГІГ­ВіГ©
                 });
+
 
             var app = builder.Build();
             app.UseAntiforgery();
@@ -164,3 +180,4 @@ namespace UIinterface
         }
     }
 }
+

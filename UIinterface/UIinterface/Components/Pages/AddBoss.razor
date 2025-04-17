@@ -2,57 +2,87 @@
 @using Core.DTOs
 @using UIinterface.Services
 @inject BossService BossService
+@inject LocationService LocationService
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 
 <PageTitle>Add Boss</PageTitle>
 
-<h3>Add New Boss</h3>
+<h3>Add Boss</h3>
 
 <EditForm Model="boss" OnValidSubmit="SaveBoss">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <div class="form-group">
-        <label for="firstName">First Name</label>
-        <InputText id="firstName" @bind-Value="boss.FirstName" class="form-control" />
+    <div class="mb-3">
+        <label for="firstName" class="form-label">First Name</label>
+        <InputText id="firstName" class="form-control" @bind-Value="boss.FirstName" />
+    </div>
+    <div class="mb-3">
+        <label for="lastName" class="form-label">Last Name</label>
+        <InputText id="lastName" class="form-control" @bind-Value="boss.LastName" />
+    </div>
+    <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <InputText id="email" class="form-control" @bind-Value="boss.Email" />
+    </div>
+    <div class="mb-3">
+        <label for="phone" class="form-label">Phone</label>
+        <InputText id="phone" class="form-control" @bind-Value="boss.Phone" />
+    </div>
+    <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <InputText id="password" class="form-control" @bind-Value="boss.Password" />
+    </div>
+    <div class="mb-3">
+        <label for="locations" class="form-label">Locations</label>
+        @foreach (var location in locations)
+        {
+            <div>
+                <InputCheckbox @bind-Value="location.IsSelected" />
+                <label>@location.Name</label>
+            </div>
+        }
     </div>
 
-    <div class="form-group">
-        <label for="lastName">Last Name</label>
-        <InputText id="lastName" @bind-Value="boss.LastName" class="form-control" />
-    </div>
-
-    <div class="form-group">
-        <label for="email">Email</label>
-        <InputText id="email" @bind-Value="boss.Email" class="form-control" />
-    </div>
-
-    <div class="form-group">
-        <label for="phone">Phone</label>
-        <InputText id="phone" @bind-Value="boss.Phone" class="form-control" />
-    </div>
-
-    <div class="form-group">
-        <label for="password">Password</label>
-        <InputText id="password" @bind-Value="boss.Password" class="form-control" type="password" />
-    </div>
-
-    <button class="btn btn-primary" type="submit">Add</button>
-    <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    <button type="submit" class="btn btn-primary">Save</button>
 </EditForm>
+
+<button class="btn btn-secondary" @onclick="GoBack">Back</button>
 
 @code {
     private BossDto boss = new BossDto();
+    private List<LocationViewModel> locations = new List<LocationViewModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var allLocations = await LocationService.GetAllAsync();
+        locations = allLocations.Select(l => new LocationViewModel
+            {
+                Id = l.Id,
+                Name = l.Name,
+                IsSelected = false
+            }).ToList();
+    }
 
     private async Task SaveBoss()
     {
+        var selectedLocations = locations.Where(l => l.IsSelected).Select(l => new LocationDto { Id = l.Id }).ToList();
+        boss.Locations = selectedLocations;
+
         await BossService.AddAsync(boss);
-        Navigation.NavigateTo("/bosses", forceLoad: true);
+        Navigation.NavigateTo("/bosses");
     }
 
-    private void Cancel()
+    private void GoBack()
     {
         Navigation.NavigateTo("/bosses");
+    }
+
+    public class LocationViewModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public bool IsSelected { get; set; }
     }
 }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Core
 {
@@ -16,6 +11,7 @@ namespace Core
         public int BossId { get; set; }
 
         // navigation property
+        public Boss Boss { get; set; } //added new property
         public IEnumerable<Worker> Workers { get; set; }
     }
 }

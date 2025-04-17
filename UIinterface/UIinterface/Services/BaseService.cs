@@ -14,40 +14,34 @@ namespace UIinterface.Services
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<TDto>> GetAllAsync()
+        public virtual async Task<IEnumerable<TDto>> GetAllAsync()
         {
             var entities = await _repository.GetAsync();
             return _mapper.Map<IEnumerable<TDto>>(entities);
         }
 
-        public async Task<TDto> GetByIdAsync(int id)
+        public virtual async Task<TDto> GetByIdAsync(int id)
         {
             var entity = await _repository.GetAsync(id);
-            return entity == null ? default : _mapper.Map<TDto>(entity);
+            return _mapper.Map<TDto>(entity);
         }
 
-        public async Task<TDto> AddAsync(TDto dto)
+        public virtual async Task<TDto> AddAsync(TDto dto)
         {
             var entity = _mapper.Map<T>(dto);
             await _repository.CreateAsync(entity);
             return _mapper.Map<TDto>(entity);
         }
 
-        public async Task<TDto> UpdateAsync(int id, TDto dto)
+        public virtual async Task<TDto> UpdateAsync(int id, TDto dto)
         {
-            var entity = await _repository.GetAsync(id);
-            if (entity == null) return default;
-
-            _mapper.Map(dto, entity);
+            var entity = _mapper.Map<T>(dto);
             await _repository.UpdateAsync(entity);
             return _mapper.Map<TDto>(entity);
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public virtual async Task<bool> DeleteAsync(int id)
         {
-            var entity = await _repository.GetAsync(id);
-            if (entity == null) return false;
-
             await _repository.DeleteAsync(id);
             return true;
         }

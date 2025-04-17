@@ -1,0 +1,105 @@
+﻿@page "/add-edit-worker/{WorkerId:int?}"
+@using Core.DTOs
+@using UIinterface.Services
+@inject WorkerService WorkerService
+@inject PositionService PositionService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Add/Edit Worker</PageTitle>
+
+<h3>@(isEditing ? "Edit Worker" : "Add Worker")</h3>
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <EditForm Model="worker" OnValidSubmit="SaveWorker">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label for="firstName" class="form-label">First Name</label>
+            <InputText id="firstName" class="form-control" @bind-Value="worker.FirstName" />
+            <ValidationMessage For="@(() => worker.FirstName)" />
+        </div>
+        <div class="mb-3">
+            <label for="lastName" class="form-label">Last Name</label>
+            <InputText id="lastName" class="form-control" @bind-Value="worker.LastName" />
+            <ValidationMessage For="@(() => worker.LastName)" />
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <InputText id="email" class="form-control" @bind-Value="worker.Email" />
+            <ValidationMessage For="@(() => worker.Email)" />
+        </div>
+        <div class="mb-3">
+            <label for="phone" class="form-label">Phone</label>
+            <InputText id="phone" class="form-control" @bind-Value="worker.Phone" />
+            <ValidationMessage For="@(() => worker.Phone)" />
+        </div>
+        <div class="mb-3">
+            <label for="positionId" class="form-label">Position</label>
+            <InputSelect id="positionId" class="form-control" @bind-Value="worker.PositionId">
+                <option value="">Select a position</option>
+                @foreach (var position in positions)
+                {
+                    <option value="@position.Id">@position.Name</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => worker.PositionId)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        @if (isEditing)
+        {
+            <button class="btn btn-danger" @onclick="DeleteWorker">Delete</button>
+        }
+        <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int? WorkerId { get; set; }
+    private WorkerDto worker = new WorkerDto();
+    private List<PositionDto> positions = new List<PositionDto>();
+    private bool isLoading = true;
+    private bool isEditing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        positions = (await PositionService.GetAllAsync()).ToList();
+        if (WorkerId.HasValue)
+        {
+            worker = await WorkerService.GetByIdAsync(WorkerId.Value);
+            isEditing = true;
+        }
+        isLoading = false;
+    }
+
+    private async Task SaveWorker()
+    {
+        if (isEditing)
+        {
+            await WorkerService.UpdateAsync(worker.Id, worker);
+        }
+        else
+        {
+            await WorkerService.AddAsync(worker);
+        }
+        Navigation.NavigateTo("/workers");
+    }
+
+    private async Task DeleteWorker()
+    {
+        await WorkerService.DeleteAsync(worker.Id);
+        Navigation.NavigateTo("/workers");
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/workers");
+    }
+}

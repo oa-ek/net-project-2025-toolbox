@@ -1,4 +1,4 @@
-﻿@page "/"
+@page "/"
 @rendermode InteractiveServer
 
 <PageTitle>ToolTrack</PageTitle>
@@ -33,3 +33,129 @@
         </div>
     </div>
 </div>
+
+
+
+
+
+<h1>Вітаємо у сервісі ToolTrack</h1>
+
+<button class="custom-button" @onclick="NavigateToLocation">Go to Locations</button>
+
+
+
+@code {
+    private void NavigateToLocation()
+    {
+        Navigation.NavigateTo("/locations");
+    }
+}
+
+
+<button class="btn btn-primary" @onclick="NavigateToBoss">Go to Boss</button>
+@code {
+    private void NavigateToBoss()
+    {
+        Navigation.NavigateTo("/bosses");
+    }
+}
+
+<button class="btn btn-primary" @onclick="NavigateToSystemAdmin">Go to System Admin</button>
+@code {
+    private void NavigateToSystemAdmin()
+    {
+        Navigation.NavigateTo("/systemadmins");
+    }
+}
+
+
+
+<button class="btn btn-primary" @onclick="NavigateToPosition">Go to Positions</button>
+@code {
+    private void NavigateToPosition()
+    {
+        Navigation.NavigateTo("/positions");
+    }
+}
+
+<button class="btn btn-primary" @onclick="NavigateToWorkersList">Go to Workers</button>
+@code {
+    private void NavigateToWorkersList()
+    {
+        Navigation.NavigateTo("/workers");
+    }
+}
+
+<button class="btn btn-primary" @onclick="NavigateToBrands">Go to Brands</button>
+@code {
+    private void NavigateToBrands()
+    {
+        Navigation.NavigateTo("/brands");
+    }
+}
+
+
+<button class="btn btn-primary" @onclick="NavigateToToolTypes">Go to Tool Types</button>
+@code {
+    private void NavigateToToolTypes()
+    {
+        Navigation.NavigateTo("/tooltypes");
+    }
+}
+
+<button class="btn btn-primary" @onclick="NavigateToToolModels">Go to Tool Models</button>
+@code {
+	private void NavigateToToolModels()
+	{
+		Navigation.NavigateTo("/toolmodels");
+	}
+}
+
+<button class="btn btn-primary" @onclick="NavigateToConditions">Go to Conditions</button>
+@code {
+	private void NavigateToConditions()
+	{
+		Navigation.NavigateTo("/conditions");
+	}
+}
+
+<button class="btn btn-primary" @onclick="NavigateBataryModel">Go to Batary Model</button>
+@code {
+	private void NavigateBataryModel()
+	{
+		Navigation.NavigateTo("/batarymodels");
+	}
+}
+
+<button class="btn btn-primary" @onclick="NavigateToPowerSypplyType">Go to Power Sypply Type</button>
+@code {
+	private void NavigateToPowerSypplyType()
+	{
+		Navigation.NavigateTo("/powersupplytypes");
+	}
+}
+
+<a class="btn btn-primary" @onclick="NavigateToHandTools">Go to Hand Tools</a>
+@code {
+	private void NavigateToHandTools()
+	{
+		Navigation.NavigateTo("/handtools");
+	}
+}
+
+<button class="btn btn-primary" @onclick="NavigateToPowerTools">Go to Power Tools</button>
+@code {
+	private void NavigateToPowerTools()
+	{
+		Navigation.NavigateTo("/powertools");
+	}
+}
+
+<button class="btn btn-primary" @onclick="NavigateToBatary">Go to Batary</button>
+@code {
+	private void NavigateToBatary()
+	{
+		Navigation.NavigateTo("/bataries");
+	}
+}
+
