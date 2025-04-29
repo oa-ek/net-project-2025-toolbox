@@ -1,0 +1,142 @@
+﻿@page "/admin"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sunflower:wght@300&display=swap" rel="stylesheet">
+
+<PageTitle>Anmin panel</PageTitle>
+
+<div class="admin-panel">
+    <h1 class="admin-title">Admin Panel</h1>
+
+    <div class="admin-buttons">
+        <button class="custom-button" @onclick="NavigateToLocation">Go to Locations</button>
+        <button class="custom-button" @onclick="NavigateToBoss">Go to Boss</button>
+        <button class="custom-button" @onclick="NavigateToSystemAdmin">Go to System Admin</button>
+        <button class="custom-button" @onclick="NavigateToPosition">Go to Positions</button>
+        <button class="custom-button" @onclick="NavigateToWorkersList">Go to Workers</button>
+        <button class="custom-button" @onclick="NavigateToBrands">Go to Brands</button>
+        <button class="custom-button" @onclick="NavigateToToolTypes">Go to Tool Types</button>
+        <button class="custom-button" @onclick="NavigateToToolModels">Go to Tool Models</button>
+        <button class="custom-button" @onclick="NavigateToConditions">Go to Conditions</button>
+        <button class="custom-button" @onclick="NavigateBataryModel">Go to Batary Model</button>
+        <button class="custom-button" @onclick="NavigateToPowerSypplyType">Go to Power Sypply Type</button>
+        <button class="custom-button" @onclick="NavigateToHandTools">Go to Hand Tools</button>
+        <button class="custom-button" @onclick="NavigateToPowerTools">Go to Power Tools</button>
+        <button class="custom-button" @onclick="NavigateToBatary">Go to Batary</button>
+    </div>
+</div>
+
+@code {
+    private void NavigateToLocation()
+    {
+        Navigation.NavigateTo("/locations");
+    }
+}
+
+@code {
+    private void NavigateToBoss()
+    {
+        Navigation.NavigateTo("/bosses");
+    }
+}
+
+@code {
+    private void NavigateToSystemAdmin()
+    {
+        Navigation.NavigateTo("/systemadmins");
+    }
+}
+
+@code {
+    private void NavigateToPosition()
+    {
+        Navigation.NavigateTo("/positions");
+    }
+}
+
+@code {
+    private void NavigateToWorkersList()
+    {
+        Navigation.NavigateTo("/workers");
+    }
+}
+
+
+@code {
+    private void NavigateToBrands()
+    {
+        Navigation.NavigateTo("/brands");
+    }
+}
+
+
+
+@code {
+    private void NavigateToToolTypes()
+    {
+        Navigation.NavigateTo("/tooltypes");
+    }
+}
+
+
+@code {
+    private void NavigateToToolModels()
+    {
+        Navigation.NavigateTo("/toolmodels");
+    }
+}
+
+
+@code {
+    private void NavigateToConditions()
+    {
+        Navigation.NavigateTo("/conditions");
+    }
+}
+
+
+@code {
+    private void NavigateBataryModel()
+    {
+        Navigation.NavigateTo("/batarymodels");
+    }
+}
+
+
+@code {
+    private void NavigateToPowerSypplyType()
+    {
+        Navigation.NavigateTo("/powersupplytypes");
+    }
+}
+
+
+@code {
+    private void NavigateToHandTools()
+    {
+        Navigation.NavigateTo("/handtools");
+    }
+}
+
+
+@code {
+    private void NavigateToPowerTools()
+    {
+        Navigation.NavigateTo("/powertools");
+    }
+}
+
+@code {
+    private void NavigateToBatary()
+    {
+        Navigation.NavigateTo("/bataries");
+    }
+}
+
+
+
+
+

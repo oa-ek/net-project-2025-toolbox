@@ -1,0 +1,112 @@
+﻿@page "/powersupplytypes"
+@using Core.DTOs
+@using UIinterface.Services
+@inject PowerSupplyTypeService PowerSupplyTypeService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Power Supply Types</PageTitle>
+
+<h3>Power Supply Types</h3>
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var powerSupplyType in powerSupplyTypes)
+            {
+                <tr>
+                    <td>@powerSupplyType.Name</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => EditPowerSupplyType(powerSupplyType.Id)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => DeletePowerSupplyType(powerSupplyType.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button class="btn btn-primary" @onclick="AddPowerSupplyType">Add New Power Supply Type</button>
+}
+
+@if (isEditing || isAdding)
+{
+    <EditForm Model="powerSupplyType" OnValidSubmit="SavePowerSupplyType">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <InputText id="name" class="form-control" @bind-Value="powerSupplyType.Name" />
+            <ValidationMessage For="@(() => powerSupplyType.Name)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    </EditForm>
+}
+
+@code {
+    private List<PowerSupplyTypeDto> powerSupplyTypes = new();
+    private PowerSupplyTypeDto powerSupplyType = new PowerSupplyTypeDto();
+    private bool isLoading = true;
+    private bool isEditing = false;
+    private bool isAdding = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        powerSupplyTypes = (await PowerSupplyTypeService.GetAllAsync()).ToList();
+        isLoading = false;
+    }
+
+    private void AddPowerSupplyType()
+    {
+        powerSupplyType = new PowerSupplyTypeDto();
+        isAdding = true;
+        isEditing = false;
+    }
+
+    private async Task EditPowerSupplyType(int id)
+    {
+        powerSupplyType = await PowerSupplyTypeService.GetByIdAsync(id);
+        isEditing = true;
+        isAdding = false;
+    }
+
+    private async Task SavePowerSupplyType()
+    {
+        if (isEditing)
+        {
+            await PowerSupplyTypeService.UpdateAsync(powerSupplyType.Id, powerSupplyType);
+        }
+        else if (isAdding)
+        {
+            await PowerSupplyTypeService.AddAsync(powerSupplyType);
+        }
+
+        powerSupplyTypes = (await PowerSupplyTypeService.GetAllAsync()).ToList();
+        isEditing = false;
+        isAdding = false;
+    }
+
+    private async Task DeletePowerSupplyType(int id)
+    {
+        await PowerSupplyTypeService.DeleteAsync(id);
+        powerSupplyTypes = (await PowerSupplyTypeService.GetAllAsync()).ToList();
+    }
+
+    private void Cancel()
+    {
+        isEditing = false;
+        isAdding = false;
+    }
+}
