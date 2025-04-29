@@ -76,6 +76,11 @@ namespace UIinterface
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+
+
+
+
+
             // Register AutoMapper
             builder.Services.AddAutoMapper(typeof(MappingProfile));
 
@@ -157,6 +162,8 @@ namespace UIinterface
             {
                 app.UseWebAssemblyDebugging();
                 app.UseMigrationsEndPoint();
+                app.UseSwagger();
+                app.UseSwaggerUI();
             }
             else
             {

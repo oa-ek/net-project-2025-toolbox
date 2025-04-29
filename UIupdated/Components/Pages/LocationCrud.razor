@@ -1,0 +1,83 @@
+﻿@page "/locations"
+@using Core.DTOs
+@using UIinterface.Services
+@inject LocationService LocationService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+
+<PageTitle>Locations</PageTitle>
+
+@if (locations == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var location in locations)
+            {
+                <tr>
+                    <td>@location.Id</td>
+                    <td>@location.Name</td>
+                    <td>@location.Description</td>
+                    <td>@location.Latitute</td>
+                    <td>@location.Longitute</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => ViewWorkers(location.Id)">View Workers and Bosses</button>
+                        <button class="btn btn-warning" @onclick="() => EditLocation(location.Id)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteLocation(location.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button class="btn btn-success" @onclick="AddLocation">Add New Location</button>
+}
+
+@code {
+    private List<LocationDto> locations;
+
+    protected override async Task OnInitializedAsync()
+    {
+        locations = (await LocationService.GetAllAsync()).ToList();
+    }
+
+    private void ViewWorkers(int locationId)
+    {
+        Navigation.NavigateTo($"/locations/{locationId}/workers");
+    }
+
+    private void EditLocation(int locationId)
+    {
+        Navigation.NavigateTo($"/edit-location/{locationId}");
+    }
+
+    private async Task DeleteLocation(int locationId)
+    {
+        await LocationService.DeleteAsync(locationId);
+        locations = (await LocationService.GetAllAsync()).ToList();
+        StateHasChanged();
+    }
+
+    private void AddLocation()
+    {
+        Navigation.NavigateTo("/add-location", forceLoad: true);
+    }
+}
+
+
+
+
+
