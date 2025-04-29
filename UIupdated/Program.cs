@@ -49,18 +49,23 @@ namespace UIupdated
                  {
                      options.ClientId = builder.Configuration["Google:ClientId"];
                      options.ClientSecret = builder.Configuration["Google:ClientSecret"];
-                     options.CallbackPath = "/signin-google"; // ??????? ??? ?????, ???? ??? ?????????
+                     options.CallbackPath = "/signin-google"; // 
                  });
 
 
-//            // налаштування Identity + EmailSender
-//            builder.Services.AddDefaultIdentity<IdentityUser>(options =>
-//            {
-//                options.SignIn.RequireConfirmedEmail = true; // ?? важливо
-//            })
-//.AddEntityFrameworkStores<ApplicationDbContext>();
+            builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
 
-//            builder.Services.AddTransient<IEmailSender, SmtpEmailSender>(); // ?? Реалізуємо далі
+
+
+            //            // налаштування Identity + EmailSender
+            //            builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+            //            {
+            //                options.SignIn.RequireConfirmedEmail = true; // ?? важливо
+            //            })
+            //.AddEntityFrameworkStores<ApplicationDbContext>();
+
+            //            builder.Services.AddTransient<IEmailSender, SmtpEmailSender>(); // ?? Реалізуємо далі
 
 
 
@@ -87,6 +92,9 @@ namespace UIupdated
 
             // Add additional endpoints required by the Identity /Account Razor components.
             app.MapAdditionalIdentityEndpoints();
+
+            app.MapRazorComponents<App>()
+                .AddInteractiveServerRenderMode();
 
             app.Run();
         }
