@@ -503,3 +503,45 @@ footer {
 }
 
 /*LOGIN-REGISTER*/
+/*CRUD 3*/
+.admin-panel {
+    text-align: center;
+    font-family: 'Sunflower', sans-serif;
+}
+
+.image-gallery {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+.image-item {
+    text-align: center;
+}
+    .image-item img {
+        width: 200px;
+        height: 200px;
+        object-fit: cover; /* або cover, якщо хочеш обрізання замість стискання */
+        border-radius: 50%;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+        .image-item img:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+
+.gallery-image {
+    width: 200px;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.image-caption {
+    margin-top: 10px;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+/*CRUD 3*/

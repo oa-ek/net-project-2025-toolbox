@@ -8,7 +8,7 @@
 
 <PageTitle>Anmin panel</PageTitle>
 
-<div class="admin-panel">
+@*<div class="admin-panel">
     <h1 class="admin-title">Admin Panel</h1>
 
     <div class="admin-buttons">
@@ -27,7 +27,43 @@
         <button class="custom-button" @onclick="NavigateToPowerTools">Go to Power Tools</button>
         <button class="custom-button" @onclick="NavigateToBatary">Go to Batary</button>
     </div>
+</div>*@
+
+<div class="admin-panel">
+    <h1 class="admin-title">Admin Panel</h1>
+
+    <div class="image-gallery">
+        <div class="image-item" @onclick="NavigateToPeople">
+            <img src="Photos/people.jpg" alt="People" class="gallery-image" />
+            <p class="image-caption">People</p>
+        </div>
+        <div class="image-item" @onclick="NavigateToTools">
+            <img src="Photos/tools.jpg" alt="Tools" class="gallery-image" />
+            <p class="image-caption">Tools</p>
+        </div>
+        <div class="image-item" @onclick="NavigateToOther">
+            <img src="Photos/othe.png" alt="Other" class="gallery-image" />
+            <p class="image-caption">Other</p>
+        </div>
+    </div>
 </div>
+
+@code {
+    private void NavigateToPeople()
+    {
+        Navigation.NavigateTo("/admin/people");
+    }
+
+    private void NavigateToTools()
+    {
+        Navigation.NavigateTo("/admin/tools");
+    }
+
+    private void NavigateToOther()
+    {
+        Navigation.NavigateTo("/admin/other");
+    }
+}
 
 @code {
     private void NavigateToLocation()

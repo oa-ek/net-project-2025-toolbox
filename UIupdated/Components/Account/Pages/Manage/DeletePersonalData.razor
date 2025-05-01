@@ -12,20 +12,23 @@
 
 <PageTitle>Delete Personal Data</PageTitle>
 
-<StatusMessage Message="@message" />
 
 <h3>Delete Personal Data</h3>
 
-<div class="alert alert-warning" role="alert">
-    <p>
-        <strong>Deleting this data will permanently remove your account, and this cannot be recovered.</strong>
-    </p>
-</div>
+<div class="manage-panel">
+    <h1 class="manage-title">Delete Personal Data</h1>
+    <StatusMessage Message="@message" />
 
-<div>
+    <div class="alert alert-warning" role="alert">
+        <p>
+            <strong>Deleting this data will permanently remove your account, and this cannot be recovered.</strong>
+        </p>
+    </div>
+
     <EditForm Model="Input" FormName="delete-user" OnValidSubmit="OnValidSubmitAsync" method="post">
         <DataAnnotationsValidator />
         <ValidationSummary class="text-danger" role="alert" />
+
         @if (requirePassword)
         {
             <div class="form-floating mb-3">
@@ -34,7 +37,8 @@
                 <ValidationMessage For="() => Input.Password" class="text-danger" />
             </div>
         }
-        <button class="w-100 btn btn-lg btn-danger" type="submit">Delete data and close my account</button>
+
+        <button class="manage-button-danger" type="submit">Delete data and close my account</button>
     </EditForm>
 </div>
 
