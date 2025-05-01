@@ -144,6 +144,10 @@ namespace UIupdated
                 app.UseHsts();
             }
 
+           /* app.MapBlazorHub();
+            app.MapFallbackToPage("/_Host");*/
+
+
             app.UseHttpsRedirection();
 
             app.UseAntiforgery();

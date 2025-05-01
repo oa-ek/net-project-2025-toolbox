@@ -1,0 +1,47 @@
+﻿@page "/location-editor"
+@using Core.DTOs
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+<h3>Edit Location</h3>
+
+<MapComponent Location="Location" OnLocationChanged="HandleLocationChanged" />
+
+<div class="form-group">
+    <label for="name">Name</label>
+    <input id="name" class="form-control" @bind="Location.Name" />
+</div>
+<div class="form-group">
+    <label for="description">Description</label>
+    <textarea id="description" class="form-control" @bind="Location.Description"></textarea>
+</div>
+<div class="form-group">
+    <label for="latitude">Latitude</label>
+    <input id="latitude" class="form-control" @bind="Location.Latitute" readonly />
+</div>
+<div class="form-group">
+    <label for="longitude">Longitude</label>
+    <input id="longitude" class="form-control" @bind="Location.Longitute" readonly />
+</div>
+<button class="btn btn-primary" @onclick="SaveLocation">Save</button>
+
+@code {
+    private LocationDto Location = new LocationDto
+        {
+            Name = "Default Location",
+            Description = "Default Description",
+            Latitute = 50.327925,
+            Longitute = 26.5119475
+        };
+
+
+    private void HandleLocationChanged(LocationDto updatedLocation)
+    {
+        Location = updatedLocation;
+    }
+
+    private async Task SaveLocation()
+    {
+        // Save the location to the database or API
+        Console.WriteLine($"Saved: {Location.Name}, {Location.Latitute}, {Location.Longitute}");
+    }
+}

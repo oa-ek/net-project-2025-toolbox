@@ -1,0 +1,35 @@
+﻿@using Core.DTOs
+@inject IJSRuntime JSRuntime
+
+<div id="map" style="height: 400px; width: 100%;"></div>
+
+@code {
+    [Parameter] public LocationDto Location { get; set; }
+    [Parameter] public EventCallback<LocationDto> OnLocationChanged { get; set; }
+
+    private DotNetObjectReference<MapComponent> _dotNetRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+
+            await JSRuntime.InvokeVoidAsync("initializeMap", Location.Latitute, Location.Longitute, Location.Name);
+            await JSRuntime.InvokeVoidAsync("onMapClick", _dotNetRef);
+        }
+    }
+
+    [JSInvokable]
+    public async Task UpdateLocation(double lat, double lng)
+    {
+        Location.Latitute = lat;
+        Location.Longitute = lng;
+        await OnLocationChanged.InvokeAsync(Location);
+    }
+
+    public void Dispose()
+    {
+        _dotNetRef?.Dispose();
+    }
+}
