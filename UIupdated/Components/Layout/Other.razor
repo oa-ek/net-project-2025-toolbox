@@ -1,4 +1,62 @@
 ﻿@page "/admin/other"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
 
-<h1>Other</h1>
-<p>This is the Other page.</p>
+
+<div class="admin-panel">
+    <h1 class="admin-title-crud">Admin Panel</h1>
+
+    <div class="image-gallery-crud">
+
+    <div class="image-item-crud" @onclick="NavigateToLocation">
+        <img src="Photos/location.png" alt="Other" class="gallery-image" />
+        <p class="image-caption-crud">Locations</p>
+    </div>
+    <div class="image-item-crud" @onclick="NavigateToPosition">
+        <img src="Photos/position.png" alt="Other" class="gallery-image" />
+        <p class="image-caption-crud">Positions</p>
+    </div>
+    <div class="image-item-crud" @onclick="NavigateToBrands">
+        <img src="Photos/brand.png" alt="Other" class="gallery-image" />
+        <p class="image-caption-crud">Brands</p>
+    </div>
+    <div class="image-item-crud" @onclick="NavigateToConditions">
+        <img src="Photos/condition.png" alt="Other" class="gallery-image" />
+        <p class="image-caption-crud">Conditions</p>
+    </div>
+        <div class="image-item-crud" @onclick="NavigateToPowerSypplyType">
+            <img src="Photos/power.png" alt="Other" class="gallery-image" />
+            <p class="image-caption-crud">Power supply</p>
+        </div>
+    </div>
+</div>
+@code {
+    private void NavigateToLocation()
+    {
+        Navigation.NavigateTo("/locations");
+    }
+}
+@code {
+    private void NavigateToPosition()
+    {
+        Navigation.NavigateTo("/positions");
+    }
+}
+@code {
+    private void NavigateToBrands()
+    {
+        Navigation.NavigateTo("/brands");
+    }
+}
+@code {
+    private void NavigateToConditions()
+    {
+        Navigation.NavigateTo("/conditions");
+    }
+}
+@code {
+    private void NavigateToPowerSypplyType()
+    {
+        Navigation.NavigateTo("/powersupplytypes");
+    }
+}
