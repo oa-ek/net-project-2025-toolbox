@@ -13,145 +13,149 @@
 
 <PageTitle>Add/Edit Power Tool</PageTitle>
 
-<h3>@(isEditing ? "Edit Power Tool" : "Add Power Tool")</h3>
+<div class="page-container">
+    <h3 class="title">@((isEditing ? "Edit" : "Add") + " Power Tool")</h3>
 
-<EditForm Model="powerTool" OnValidSubmit="SavePowerTool">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+    <EditForm Model="powerTool" OnValidSubmit="SavePowerTool">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-    <!-- Tool Type -->
-    <div class="mb-3">
-        <label for="toolTypeId" class="form-label">Tool Type</label>
-        <InputSelect id="toolTypeId" class="form-control" @bind-Value="powerTool.ToolTypeId">
-            <option value="">Select a tool type</option>
-            @foreach (var toolType in toolTypes)
-            {
-                <option value="@toolType.Id">@toolType.Name</option>
-            }
-        </InputSelect>
-        <ValidationMessage For="@(() => powerTool.ToolTypeId)" />
-    </div>
+        @* Tool Type *@
+        <div class="form-group">
+            <label>Tool Type</label>
+            <InputSelect class="form-control" @bind-Value="powerTool.ToolTypeId">
+                <option value="">Select tool type</option>
+                @foreach (var item in toolTypes)
+                {
+                    <option value="@item.Id">@item.Name</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => powerTool.ToolTypeId)" />
+        </div>
 
-    <!-- Condition -->
-    <div class="mb-3">
-        <label for="conditionId" class="form-label">Condition</label>
-        <InputSelect id="conditionId" class="form-control" @bind-Value="powerTool.ConditionId">
-            <option value="">Select a condition</option>
-            @foreach (var condition in conditions)
-            {
-                <option value="@condition.Id">@condition.Name</option>
-            }
-        </InputSelect>
-        <ValidationMessage For="@(() => powerTool.ConditionId)" />
-    </div>
+        @* Condition *@
+        <div class="form-group">
+            <label>Condition</label>
+            <InputSelect class="form-control" @bind-Value="powerTool.ConditionId">
+                <option value="">Select condition</option>
+                @foreach (var item in conditions)
+                {
+                    <option value="@item.Id">@item.Name</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => powerTool.ConditionId)" />
+        </div>
 
-    <!-- Tool Model -->
-    <div class="mb-3">
-        <label for="toolModelId" class="form-label">Tool Model</label>
-        <InputSelect id="toolModelId" class="form-control" @bind-Value="powerTool.ToolModelId">
-            <option value="">Select a tool model</option>
-            @foreach (var toolModel in toolModels)
-            {
-                <option value="@toolModel.Id">@toolModel.Name</option>
-            }
-        </InputSelect>
-        <ValidationMessage For="@(() => powerTool.ToolModelId)" />
-    </div>
+        @* Tool Model *@
+        <div class="form-group">
+            <label>Tool Model</label>
+            <InputSelect class="form-control" @bind-Value="powerTool.ToolModelId">
+                <option value="">Select model</option>
+                @foreach (var item in toolModels)
+                {
+                    <option value="@item.Id">@item.Name</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => powerTool.ToolModelId)" />
+        </div>
 
-    <!-- Power Supply Type -->
-    <div class="mb-3">
-        <label for="powerSupplyTypeId" class="form-label">Power Supply Type</label>
-        <InputSelect id="powerSupplyTypeId" class="form-control" @bind-Value="powerTool.PowerSupplyTypeId">
-            <option value="">Select a power supply type</option>
-            @foreach (var powerSupplyType in powerSupplyTypes)
-            {
-                <option value="@powerSupplyType.Id">@powerSupplyType.Name</option>
-            }
-        </InputSelect>
-        <ValidationMessage For="@(() => powerTool.PowerSupplyTypeId)" />
-    </div>
+        @* Power Supply Type *@
+        <div class="form-group">
+            <label>Power Supply</label>
+            <InputSelect class="form-control" @bind-Value="powerTool.PowerSupplyTypeId">
+                <option value="">Select type</option>
+                @foreach (var item in powerSupplyTypes)
+                {
+                    <option value="@item.Id">@item.Name</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => powerTool.PowerSupplyTypeId)" />
+        </div>
 
-    <!-- Last Worker -->
-    <div class="mb-3">
-        <label for="lastWorkerId" class="form-label">Last Worker</label>
-        <InputSelect id="lastWorkerId" class="form-control" @bind-Value="powerTool.LastWorkerId">
-            <option value="">Select a worker</option>
-            @foreach (var worker in workers)
-            {
-                <option value="@worker.Id">@worker.FirstName @worker.LastName</option>
-            }
-        </InputSelect>
-        <ValidationMessage For="@(() => powerTool.LastWorkerId)" />
-    </div>
+        @* Last Worker *@
+        <div class="form-group">
+            <label>Last Worker</label>
+            <InputSelect class="form-control" @bind-Value="powerTool.LastWorkerId">
+                <option value="">Select worker</option>
+                @foreach (var item in workers)
+                {
+                    <option value="@item.Id">@item.FirstName @item.LastName</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => powerTool.LastWorkerId)" />
+        </div>
 
-    <!-- Last Location -->
-    <div class="mb-3">
-        <label for="lastLocationId" class="form-label">Last Location</label>
-        <InputSelect id="lastLocationId" class="form-control" @bind-Value="powerTool.LastLocationId">
-            <option value="">Select a location</option>
-            @foreach (var location in locations)
-            {
-                <option value="@location.Id">@location.Name</option>
-            }
-        </InputSelect>
-        <ValidationMessage For="@(() => powerTool.LastLocationId)" />
-    </div>
+        @* Last Location *@
+        <div class="form-group">
+            <label>Last Location</label>
+            <InputSelect class="form-control" @bind-Value="powerTool.LastLocationId">
+                <option value="">Select location</option>
+                @foreach (var item in locations)
+                {
+                    <option value="@item.Id">@item.Name</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => powerTool.LastLocationId)" />
+        </div>
 
-    <!-- Has Case -->
-    <div class="mb-3">
-        <label for="hasCase" class="form-label">Has Case</label>
-        <InputCheckbox id="hasCase" class="form-check-input" @bind-Value="powerTool.HasCase" />
-        <ValidationMessage For="@(() => powerTool.HasCase)" />
-    </div>
+        @* Has Case *@
+        <div class="form-group">
+            <label>Has Case</label><br />
+            <InputCheckbox class="form-check-input" @bind-Value="powerTool.HasCase" />
+            <ValidationMessage For="@(() => powerTool.HasCase)" />
+        </div>
 
-    <!-- Date Made -->
-    <div class="mb-3">
-        <label for="dateMade" class="form-label">Date Made</label>
-        <InputDate id="dateMade" class="form-control" @bind-Value="powerTool.DateMade" />
-        <ValidationMessage For="@(() => powerTool.DateMade)" />
-    </div>
+        @* Date Made *@
+        <div class="form-group">
+            <label>Date Made</label>
+            <InputDate class="form-control" @bind-Value="powerTool.DateMade" />
+            <ValidationMessage For="@(() => powerTool.DateMade)" />
+        </div>
 
-    <!-- Serial Number -->
-    <div class="mb-3">
-        <label for="serialNumber" class="form-label">Serial Number</label>
-        <InputText id="serialNumber" class="form-control" @bind-Value="powerTool.SerialNumber" />
-        <ValidationMessage For="@(() => powerTool.SerialNumber)" />
-    </div>
+        @* Serial Number *@
+        <div class="form-group">
+            <label>Serial Number</label>
+            <InputText class="form-control" @bind-Value="powerTool.SerialNumber" />
+            <ValidationMessage For="@(() => powerTool.SerialNumber)" />
+        </div>
 
-    <!-- Number -->
-    <div class="mb-3">
-        <label for="number" class="form-label">Number</label>
-        <InputText id="number" class="form-control" @bind-Value="powerTool.Number" />
-        <ValidationMessage For="@(() => powerTool.Number)" />
-    </div>
+        @* Number *@
+        <div class="form-group">
+            <label>Number</label>
+            <InputText class="form-control" @bind-Value="powerTool.Number" />
+            <ValidationMessage For="@(() => powerTool.Number)" />
+        </div>
 
-    <!-- Price -->
-    <div class="mb-3">
-        <label for="price" class="form-label">Price</label>
-        <InputNumber id="price" class="form-control" @bind-Value="powerTool.Price" />
-        <ValidationMessage For="@(() => powerTool.Price)" />
-    </div>
+        @* Price *@
+        <div class="form-group">
+            <label>Price</label>
+            <InputNumber class="form-control" @bind-Value="powerTool.Price" />
+            <ValidationMessage For="@(() => powerTool.Price)" />
+        </div>
 
-    <!-- Error Message -->
-    @if (!string.IsNullOrEmpty(errorMessage))
-    {
-        <div class="alert alert-danger">@errorMessage</div>
-    }
+        @* Error Message *@
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger">@errorMessage</div>
+        }
 
-    <!-- Buttons -->
-    <button type="submit" class="btn btn-primary">Save</button>
-    <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
-</EditForm>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-save">💾 Save</button>
+            <button type="button" class="btn btn-cancel" @onclick="Cancel">↩️ Cancel</button>
+        </div>
+    </EditForm>
+</div>
 
 @code {
     [Parameter] public int? Id { get; set; }
-    private PowerToolDto powerTool = new PowerToolDto();
+
+    private PowerToolDto powerTool = new();
     private List<ToolTypeDto> toolTypes = new();
     private List<ConditionDto> conditions = new();
     private List<ToolModelDto> toolModels = new();
     private List<PowerSupplyTypeDto> powerSupplyTypes = new();
-    private List<WorkerDto> workers = new(); // Список працівників
-    private List<LocationDto> locations = new(); // Список локацій
+    private List<WorkerDto> workers = new();
+    private List<LocationDto> locations = new();
     private bool isEditing = false;
     private string errorMessage = string.Empty;
 
@@ -161,8 +165,8 @@
         conditions = (await ConditionService.GetAllAsync()).ToList();
         toolModels = (await ToolModelService.GetAllAsync()).ToList();
         powerSupplyTypes = (await PowerSupplyTypeService.GetAllAsync()).ToList();
-        workers = (await WorkerService.GetAllAsync()).ToList(); // Завантаження працівників
-        locations = (await LocationService.GetAllAsync()).ToList(); // Завантаження локацій
+        workers = (await WorkerService.GetAllAsync()).ToList();
+        locations = (await LocationService.GetAllAsync()).ToList();
 
         if (Id.HasValue)
         {
@@ -173,46 +177,33 @@
 
     private async Task SavePowerTool()
     {
-        if (ValidatePowerTool())
-        {
-            try
-            {
-                if (isEditing)
-                {
-                    await PowerToolService.UpdateAsync(powerTool.Id, powerTool);
-                }
-                else
-                {
-                    await PowerToolService.AddAsync(powerTool);
-                }
-
-                Navigation.NavigateTo("/powertools");
-            }
-            catch (Exception ex)
-            {
-                errorMessage = $"An error occurred: {ex.Message}";
-            }
-        }
-        else
+        if (!ValidatePowerTool())
         {
             errorMessage = "All required fields must be filled.";
+            return;
         }
-    }
 
-    private bool ValidatePowerTool()
-    {
-        if (powerTool.ToolTypeId == 0 || powerTool.ConditionId == 0 ||
-            powerTool.ToolModelId == 0 || powerTool.PowerSupplyTypeId == 0 ||
-            string.IsNullOrEmpty(powerTool.SerialNumber) || string.IsNullOrEmpty(powerTool.Number) ||
-            powerTool.LastLocationId == 0 || powerTool.LastWorkerId == 0)
+        try
         {
-            return false;
+            if (isEditing)
+                await PowerToolService.UpdateAsync(powerTool.Id, powerTool);
+            else
+                await PowerToolService.AddAsync(powerTool);
+
+            Navigation.NavigateTo("/powertools");
         }
-        return true;
+        catch (Exception ex)
+        {
+            errorMessage = $"Error: {ex.Message}";
+        }
     }
 
-    private void Cancel()
-    {
-        Navigation.NavigateTo("/powertools");
-    }
+    private bool ValidatePowerTool() =>
+        powerTool.ToolTypeId > 0 && powerTool.ConditionId > 0 &&
+        powerTool.ToolModelId > 0 && powerTool.PowerSupplyTypeId > 0 &&
+        powerTool.LastWorkerId > 0 && powerTool.LastLocationId > 0 &&
+        !string.IsNullOrWhiteSpace(powerTool.SerialNumber) &&
+        !string.IsNullOrWhiteSpace(powerTool.Number);
+
+    private void Cancel() => Navigation.NavigateTo("/powertools");
 }

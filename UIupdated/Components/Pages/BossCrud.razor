@@ -7,47 +7,63 @@
 
 <PageTitle>Bosses</PageTitle>
 
-<h3>Bosses</h3>
+<div class="page-container">
+    <h3 class="title">Bosses</h3>
 
-@if (isLoading)
-{
-    <p>Loading...</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var boss in bosses)
-            {
+    @if (isLoading)
+    {
+        <p>Loading...</p>
+    }
+    else
+    {
+        <table class="styled-table">
+            <thead>
                 <tr>
-                    <td>@boss.FirstName</td>
-                    <td>@boss.LastName</td>
-                    <td>@boss.Email</td>
-                    <td>@boss.Phone</td>
-                    <td>
-                        <button class="btn btn-primary" @onclick="() => EditBoss(boss.Id)">Edit</button>
-                        <button class="btn btn-danger" @onclick="() => DeleteBoss(boss.Id)">Delete</button>
-                    </td>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Actions</th>
                 </tr>
-            }
-        </tbody>
-    </table>
-    <button class="btn btn-primary" @onclick="AddBoss">Add New Boss</button>
-}
+            </thead>
+            <tbody>
+                @foreach (var boss in bosses)
+                {
+                    <tr>
+                        <td>@boss.FirstName</td>
+                        <td>@boss.LastName</td>
+                        <td>@boss.Email</td>
+                        <td>@boss.Phone</td>
+                        <td>
+                            <button class="btn btn-save" @onclick="() => EditBoss(boss.Id)">✏️</button>
+                            <button class="btn btn-delete" @onclick="() => DeleteBoss(boss.Id)">🗑️</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
 
+        <div class="form-actions">
+            <button class="btn btn-save" @onclick="AddBoss">➕ Add New Boss</button>
+            <button type="button" class="btn btn-cancel" @onclick="GoBack">↩️ Back</button>
+        </div>
+    }
+</div>
+@*            <button type="button" class="btn btn-cancel" @onclick="GoBack">↩️ Back</button>
+    @code {private void GoBack()
+    {
+        Navigation.NavigateTo("/admin/people");
+    }
+    }
+*@
 @code {
     private List<BossDto> bosses = new();
     private bool isLoading = true;
 
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/admin/people");
+    }
     protected override async Task OnInitializedAsync()
     {
         bosses = (await BossService.GetAllAsync()).ToList();

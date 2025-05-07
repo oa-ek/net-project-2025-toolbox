@@ -7,59 +7,63 @@
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 
-<PageTitle>Add/Edit Batary</PageTitle>
+<PageTitle>@(isEditing ? "Edit Battery" : "Add Battery")</PageTitle>
 
-<h3>@(isEditing ? "Edit Batary" : "Add Batary")</h3>
+<div class="page-container">
+    <h3 class="title">@((isEditing ? "Edit" : "Add") + " Battery")</h3>
 
-<EditForm Model="batary" OnValidSubmit="SaveBatary">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+    <EditForm Model="batary" OnValidSubmit="SaveBatary">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-    <div class="mb-3">
-        <label for="bataryModel" class="form-label">Batary Model</label>
-        <InputSelect id="bataryModel" class="form-control" @bind-Value="batary.BataryModelId">
-            <option value="">Select a model</option>
-            @foreach (var model in bataryModels)
-            {
-                <option value="@model.Id">@model.Name</option>
-            }
-        </InputSelect>
-        <ValidationMessage For="@(() => batary.BataryModelId)" />
-    </div>
+        <div class="form-group">
+            <label for="bataryModel" class="form-label">Battery Model</label>
+            <InputSelect id="bataryModel" class="form-input" @bind-Value="batary.BataryModelId">
+                <option value="">Select a model</option>
+                @foreach (var model in bataryModels)
+                {
+                    <option value="@model.Id">@model.Name</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => batary.BataryModelId)" />
+        </div>
 
-    <div class="mb-3">
-        <label for="condition" class="form-label">Condition</label>
-        <InputSelect id="condition" class="form-control" @bind-Value="batary.ConditionId">
-            <option value="">Select a condition</option>
-            @foreach (var condition in conditions)
-            {
-                <option value="@condition.Id">@condition.Name</option>
-            }
-        </InputSelect>
-        <ValidationMessage For="@(() => batary.ConditionId)" />
-    </div>
+        <div class="form-group">
+            <label for="condition" class="form-label">Condition</label>
+            <InputSelect id="condition" class="form-input" @bind-Value="batary.ConditionId">
+                <option value="">Select a condition</option>
+                @foreach (var condition in conditions)
+                {
+                    <option value="@condition.Id">@condition.Name</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => batary.ConditionId)" />
+        </div>
 
-    <div class="mb-3">
-        <label for="serialNumber" class="form-label">Serial Number</label>
-        <InputText id="serialNumber" class="form-control" @bind-Value="batary.SerialNumber" />
-        <ValidationMessage For="@(() => batary.SerialNumber)" />
-    </div>
+        <div class="form-group">
+            <label for="serialNumber" class="form-label">Serial Number</label>
+            <InputText id="serialNumber" class="form-input" @bind-Value="batary.SerialNumber" />
+            <ValidationMessage For="@(() => batary.SerialNumber)" />
+        </div>
 
-    <div class="mb-3">
-        <label for="number" class="form-label">Number</label>
-        <InputText id="number" class="form-control" @bind-Value="batary.Number" />
-        <ValidationMessage For="@(() => batary.Number)" />
-    </div>
+        <div class="form-group">
+            <label for="number" class="form-label">Number</label>
+            <InputText id="number" class="form-input" @bind-Value="batary.Number" />
+            <ValidationMessage For="@(() => batary.Number)" />
+        </div>
 
-    <div class="mb-3">
-        <label for="price" class="form-label">Price</label>
-        <InputNumber id="price" class="form-control" @bind-Value="batary.Price" />
-        <ValidationMessage For="@(() => batary.Price)" />
-    </div>
+        <div class="form-group">
+            <label for="price" class="form-label">Price</label>
+            <InputNumber id="price" class="form-input" @bind-Value="batary.Price" />
+            <ValidationMessage For="@(() => batary.Price)" />
+        </div>
 
-    <button type="submit" class="btn btn-primary">Save</button>
-    <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
-</EditForm>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-save">Save</button>
+            <button type="button" class="btn btn-cancel" @onclick="Cancel">Cancel</button>
+        </div>
+    </EditForm>
+</div>
 
 @code {
     [Parameter] public int? Id { get; set; }
@@ -83,19 +87,12 @@
     private async Task SaveBatary()
     {
         if (isEditing)
-        {
             await BataryService.UpdateAsync(batary.Id, batary);
-        }
         else
-        {
             await BataryService.AddAsync(batary);
-        }
 
         Navigation.NavigateTo("/bataries");
     }
 
-    private void Cancel()
-    {
-        Navigation.NavigateTo("/bataries");
-    }
+    private void Cancel() => Navigation.NavigateTo("/bataries");
 }
