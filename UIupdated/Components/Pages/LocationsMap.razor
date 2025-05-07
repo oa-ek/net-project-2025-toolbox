@@ -1,0 +1,52 @@
+﻿@page "/locations-map"
+@using Core.DTOs
+@using UIinterface.Services
+@inject LocationService LocationService
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<PageTitle>Locations Map</PageTitle>
+
+<h3>Locations Map</h3>
+
+@if (locations == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div id="map-multiple" style="height: 500px; width: 100%;"></div>
+}
+
+@code {
+    private List<LocationDto> locations;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Завантаження всіх локацій
+            locations = (await LocationService.GetAllAsync()).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error loading locations: {ex.Message}");
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (locations != null && locations.Any())
+        {
+            try
+            {
+                // Передача даних про локації в JavaScript
+                await JSRuntime.InvokeVoidAsync("initializeLocationsMap", locations);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error initializing map: {ex.Message}");
+            }
+        }
+    }
+}

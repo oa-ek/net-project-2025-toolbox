@@ -51,7 +51,14 @@ else
     
     protected override async Task OnInitializedAsync()
     {
-        locations = (await LocationService.GetAllAsync()).ToList();
+        try
+        {
+            locations = (await LocationService.GetAllAsync()).ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error loading locations: {ex.Message}");
+        }
     }
 
     private void ViewWorkers(int locationId)
@@ -66,9 +73,16 @@ else
 
     private async Task DeleteLocation(int locationId)
     {
-        await LocationService.DeleteAsync(locationId);
-        locations = (await LocationService.GetAllAsync()).ToList();
-        StateHasChanged();
+        try
+        {
+            await LocationService.DeleteAsync(locationId);
+            locations = (await LocationService.GetAllAsync()).ToList();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error deleting location: {ex.Message}");
+        }
     }
 
     private void AddLocation()

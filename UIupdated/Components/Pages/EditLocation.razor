@@ -72,18 +72,24 @@ else
 
     private async Task SaveLocation()
     {
-        if (LocationId.HasValue && LocationId != 0)
+        try
         {
-            // Оновлення існуючої локації
-            await LocationService.UpdateAsync(LocationId.Value, location);
+            if (LocationId.HasValue && LocationId != 0)
+            {
+                await LocationService.UpdateAsync(LocationId.Value, location);
+            }
+            else
+            {
+                await LocationService.AddAsync(location);
+            }
+            Navigation.NavigateTo("/locations", forceLoad: true);
         }
-        else
+        catch (Exception ex)
         {
-            // Додавання нової локації
-            await LocationService.AddAsync(location);
+            Console.Error.WriteLine($"Error saving location: {ex.Message}");
         }
-        Navigation.NavigateTo("/locations", forceLoad: true);
     }
+
 
 
     private void Cancel()

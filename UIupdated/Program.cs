@@ -39,8 +39,9 @@ namespace UIupdated
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
-            builder.Services.AddDbContext<TTContext>(options => options.UseSqlServer(connectionString));          // [дндюмн]
-
+            builder.Services.AddDbContext<TTContext>(options => options.UseSqlServer(connectionString));
+            // [дндюмн]
+            
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)

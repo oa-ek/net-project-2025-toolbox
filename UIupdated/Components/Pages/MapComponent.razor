@@ -1,7 +1,8 @@
 ﻿@using Core.DTOs
 @inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
 
-<div id="map" style="height: 400px; width: 100%;"></div>
+<div id="map-single" style="height: 400px; width: 100%;"></div>
 
 @code {
     [Parameter] public LocationDto Location { get; set; }
@@ -13,12 +14,19 @@
     {
         if (firstRender)
         {
-            _dotNetRef = DotNetObjectReference.Create(this);
-
-            await JSRuntime.InvokeVoidAsync("initializeMap", Location.Latitute, Location.Longitute, Location.Name);
-            await JSRuntime.InvokeVoidAsync("onMapClick", _dotNetRef);
+            try
+            {
+                _dotNetRef = DotNetObjectReference.Create(this);
+                await JSRuntime.InvokeVoidAsync("initializeMap", Location.Latitute, Location.Longitute, Location.Name);
+                await JSRuntime.InvokeVoidAsync("onMapClick", _dotNetRef);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error initializing map: {ex.Message}");
+            }
         }
     }
+
 
     [JSInvokable]
     public async Task UpdateLocation(double lat, double lng)
