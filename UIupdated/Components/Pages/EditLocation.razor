@@ -30,13 +30,8 @@ else
         </div>
 
         <div class="form-group">
-            <label for="latitude">Latitude</label>
-            <InputNumber id="latitude" @bind-Value="location.Latitute" class="form-control" />
-        </div>
-
-        <div class="form-group">
-            <label for="longitude">Longitude</label>
-            <InputNumber id="longitude" @bind-Value="location.Longitute" class="form-control" />
+            <label>Location</label>
+            <MapComponent Location="location" OnLocationChanged="HandleLocationChanged" />
         </div>
 
         <button class="btn btn-primary" type="submit">@buttonText</button>
@@ -54,6 +49,7 @@ else
     {
         if (LocationId.HasValue && LocationId != 0)
         {
+            // Редагування існуючої локації
             var fetchedLocation = await LocationService.GetByIdAsync(LocationId.Value);
             if (fetchedLocation != null)
             {
@@ -63,7 +59,12 @@ else
         }
         else
         {
-            location = new LocationDto();
+            // Додавання нової локації
+            location = new LocationDto
+                {
+                    Latitute = 50.327925, // Default latitude
+                    Longitute = 26.5119475 // Default longitude
+                };
             buttonText = "Add";
         }
         isLoading = false;
@@ -73,29 +74,26 @@ else
     {
         if (LocationId.HasValue && LocationId != 0)
         {
+            // Оновлення існуючої локації
             await LocationService.UpdateAsync(LocationId.Value, location);
         }
         else
         {
+            // Додавання нової локації
             await LocationService.AddAsync(location);
         }
         Navigation.NavigateTo("/locations", forceLoad: true);
     }
 
+
     private void Cancel()
     {
         Navigation.NavigateTo("/locations");
     }
+
+    private void HandleLocationChanged(LocationDto updatedLocation)
+    {
+        location.Latitute = updatedLocation.Latitute;
+        location.Longitute = updatedLocation.Longitute;
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-

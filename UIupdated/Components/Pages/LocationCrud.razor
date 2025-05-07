@@ -48,7 +48,7 @@ else
 
 @code {
     private List<LocationDto> locations;
-
+    
     protected override async Task OnInitializedAsync()
     {
         locations = (await LocationService.GetAllAsync()).ToList();
