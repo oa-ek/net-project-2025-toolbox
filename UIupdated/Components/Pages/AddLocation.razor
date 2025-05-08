@@ -30,13 +30,8 @@ else
         </div>
 
         <div class="form-group">
-            <label for="latitude">Latitude</label>
-            <InputNumber id="latitude" @bind-Value="location.Latitute" class="form-control" />
-        </div>
-
-        <div class="form-group">
-            <label for="longitude">Longitude</label>
-            <InputNumber id="longitude" @bind-Value="location.Longitute" class="form-control" />
+            <label>Location</label>
+            <MapComponent Location="location" OnLocationChanged="HandleLocationChanged" />
         </div>
 
         <button class="btn btn-primary" type="submit">Add</button>
@@ -45,7 +40,11 @@ else
 }
 
 @code {
-    private LocationDto location = new LocationDto();
+    private LocationDto location = new LocationDto
+        {
+            Latitute = 50.327925, // Default latitude
+            Longitute = 26.5119475 // Default longitude
+        };
     private bool isLoading = false;
 
     private async Task SaveLocation()
@@ -58,16 +57,10 @@ else
     {
         Navigation.NavigateTo("/locations");
     }
+
+    private void HandleLocationChanged(LocationDto updatedLocation)
+    {
+        location.Latitute = updatedLocation.Latitute;
+        location.Longitute = updatedLocation.Longitute;
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-

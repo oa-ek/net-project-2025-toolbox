@@ -1,4 +1,4 @@
-﻿@page "/edit-location/{LocationId:int?}"
+﻿@* @page "/location-editor{LocationId:int?}"
 @using Core.DTOs
 @using UIinterface.Services
 @inject LocationService LocationService
@@ -49,7 +49,6 @@ else
     {
         if (LocationId.HasValue && LocationId != 0)
         {
-            // Редагування існуючої локації
             var fetchedLocation = await LocationService.GetByIdAsync(LocationId.Value);
             if (fetchedLocation != null)
             {
@@ -59,7 +58,6 @@ else
         }
         else
         {
-            // Додавання нової локації
             location = new LocationDto
                 {
                     Latitute = 50.327925, // Default latitude
@@ -72,25 +70,16 @@ else
 
     private async Task SaveLocation()
     {
-        try
+        if (LocationId.HasValue && LocationId != 0)
         {
-            if (LocationId.HasValue && LocationId != 0)
-            {
-                await LocationService.UpdateAsync(LocationId.Value, location);
-            }
-            else
-            {
-                await LocationService.AddAsync(location);
-            }
-            Navigation.NavigateTo("/locations", forceLoad: true);
+            await LocationService.UpdateAsync(LocationId.Value, location);
         }
-        catch (Exception ex)
+        else
         {
-            Console.Error.WriteLine($"Error saving location: {ex.Message}");
+            await LocationService.AddAsync(location);
         }
+        Navigation.NavigateTo("/locations", forceLoad: true);
     }
-
-
 
     private void Cancel()
     {
@@ -103,3 +92,4 @@ else
         location.Longitute = updatedLocation.Longitute;
     }
 }
+ *@

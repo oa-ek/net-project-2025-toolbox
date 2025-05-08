@@ -94,16 +94,25 @@ namespace UIinterface.Services
         // Метод для отримання локації з босами та працівниками
         public override async Task<LocationDto> GetByIdAsync(int id)
         {
-            var location = await _locationRepository.Context.Locations
-                .Include(l => l.Bosses)
-                .Include(l => l.Workers)
-                .FirstOrDefaultAsync(l => l.Id == id);
+            try
+            {
+                var location = await _locationRepository.Context.Locations
+                    .Include(l => l.Bosses)
+                    .Include(l => l.Workers)
+                    .FirstOrDefaultAsync(l => l.Id == id);
 
-            if (location == null)
-                throw new Exception("Location not found");
+                if (location == null)
+                    throw new Exception("Location not found");
 
-            return _mapper.Map<LocationDto>(location);
+                return _mapper.Map<LocationDto>(location);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error fetching location: {ex.Message}");
+                throw;
+            }
         }
+
 
     }
 }

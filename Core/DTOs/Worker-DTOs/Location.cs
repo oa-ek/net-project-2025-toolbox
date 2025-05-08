@@ -13,11 +13,11 @@ namespace Core.DTOs
         public string Description { get; set; }
 
         [Required(ErrorMessage = "Latitude is required.")]
-        [Range(-90, 90, ErrorMessage = "Latitude must be between -90 and 90.")]
+        [Range(0, 1000000000, ErrorMessage = "Latitude must be between 0 and 100000000")]
         public double Latitute { get; set; }
 
         [Required(ErrorMessage = "Longitude is required.")]
-        [Range(-180, 180, ErrorMessage = "Longitude must be between -180 and 180.")]
+        [Range(0, 1000000000, ErrorMessage = "Longitude must be between 0 and 1000000000.")]
         public double Longitute { get; set; }
 
         public List<BossDto> Bosses { get; set; } = new List<BossDto>();
