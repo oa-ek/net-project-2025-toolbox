@@ -1,14 +1,28 @@
 @page "/"
+@using Core.DTOs
+@using UIinterface.Services
 @inject NavigationManager Navigation
+@inject LocationService LocationService
+@inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
 
 <PageTitle>ToolTrack</PageTitle>
-<div class="info-section">
 
+<div class="info-section">
     <h1 class="hero-title">ToolTrack</h1>
     <p class="hero-description">
         A modern system for tracking and managing tools, locations, and employees in your organization.
     </p>
+
+    <!-- КАРТА ПІСЛЯ ОПИСУ -->
+    @if (locations == null)
+    {
+        <p>Loading map...</p>
+    }
+    else
+    {
+        <div id="map-multiple" style="height: 500px; width: 100%; margin-bottom: 2rem;"></div>
+    }
 
     <h2>Features of ToolTrack</h2>
     <div class="features-cards">
@@ -35,6 +49,41 @@
     </div>
 </div>
 
+@code {
+    private List<LocationDto> locations;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Завантаження всіх локацій
+            locations = (await LocationService.GetAllAsync()).ToList();
+            Console.WriteLine($"Loaded {locations.Count} locations.");
+            foreach (var location in locations)
+            {
+                Console.WriteLine($"Location: {location.Name}, Lat: {location.Latitute}, Lng: {location.Longitute}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error loading locations: {ex.Message}");
+        }
+    }
 
 
-
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (locations != null && locations.Any())
+        {
+            try
+            {
+                // Передача даних про локації в JavaScript
+                await JSRuntime.InvokeVoidAsync("initializeLocationsMap", locations);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error initializing map: {ex.Message}");
+            }
+        }
+    }
+}
