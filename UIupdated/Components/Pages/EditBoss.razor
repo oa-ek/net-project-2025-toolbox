@@ -2,72 +2,105 @@
 @using Core.DTOs
 @using UIinterface.Services
 @inject BossService BossService
+@inject LocationService LocationService
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 
 <PageTitle>Edit Boss</PageTitle>
 
-<h3>Edit Boss</h3>
+<div class="page-container">
+    <h3 class="title">Edit Boss</h3>
 
-@if (isLoading)
-{
-    <p>Loading...</p>
-}
-else
-{
     <EditForm Model="boss" OnValidSubmit="SaveBoss">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
         <div class="form-group">
-            <label for="firstName">First Name</label>
-            <InputText id="firstName" @bind-Value="boss.FirstName" class="form-control" />
+            <label for="firstName" class="form-label">First Name</label>
+            <InputText id="firstName" class="form-input" @bind-Value="boss.FirstName" />
         </div>
 
         <div class="form-group">
-            <label for="lastName">Last Name</label>
-            <InputText id="lastName" @bind-Value="boss.LastName" class="form-control" />
+            <label for="lastName" class="form-label">Last Name</label>
+            <InputText id="lastName" class="form-input" @bind-Value="boss.LastName" />
         </div>
 
         <div class="form-group">
-            <label for="email">Email</label>
-            <InputText id="email" @bind-Value="boss.Email" class="form-control" />
+            <label for="email" class="form-label">Email</label>
+            <InputText id="email" class="form-input" @bind-Value="boss.Email" />
         </div>
 
         <div class="form-group">
-            <label for="phone">Phone</label>
-            <InputText id="phone" @bind-Value="boss.Phone" class="form-control" />
+            <label for="phone" class="form-label">Phone</label>
+            <InputText id="phone" class="form-input" @bind-Value="boss.Phone" />
         </div>
 
         <div class="form-group">
-            <label for="password">Password</label>
-            <InputText id="password" @bind-Value="boss.Password" class="form-control" type="password" />
+            <label for="password" class="form-label">Password</label>
+            <InputText id="password" class="form-input" @bind-Value="boss.Password" type="password" />
         </div>
 
-        <button class="btn btn-primary" type="submit">Save</button>
-        <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+        <div class="form-group">
+            <label class="form-label">Locations</label>
+            @foreach (var location in locations)
+            {
+                <div class="checkbox-group">
+                    <InputCheckbox @bind-Value="location.IsSelected" />
+                    <label>@location.Name</label>
+                </div>
+            }
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-save">💾 Save</button>
+            <button type="button" class="btn btn-cancel" @onclick="GoBack">↩️ Back</button>
+        </div>
     </EditForm>
-}
+</div>
 
 @code {
     [Parameter] public int BossId { get; set; }
-    private BossDto boss = new BossDto();
-    private bool isLoading = true;
+
+    private BossDto boss = new();
+    private List<LocationViewModel> locations = new();
 
     protected override async Task OnInitializedAsync()
     {
         boss = await BossService.GetByIdAsync(BossId);
-        isLoading = false;
+        var allLocations = await LocationService.GetAllAsync();
+
+        var selectedIds = boss.Locations?.Select(l => l.Id).ToHashSet() ?? new();
+
+        locations = allLocations.Select(loc => new LocationViewModel
+            {
+                Id = loc.Id,
+                Name = loc.Name,
+                IsSelected = selectedIds.Contains(loc.Id)
+            }).ToList();
     }
 
     private async Task SaveBoss()
     {
-        await BossService.UpdateAsync(BossId, boss);
-        Navigation.NavigateTo("/bosses", forceLoad: true);
+        // Оновлення списку локацій: лише Id, щоб уникнути дублювання трекінгу
+        boss.Locations = locations
+            .Where(l => l.IsSelected)
+            .Select(l => new LocationDto { Id = l.Id })
+            .ToList();
+
+        await BossService.UpdateAsync(boss.Id, boss);
+        Navigation.NavigateTo("/bosses");
     }
 
-    private void Cancel()
+
+    private void GoBack()
     {
         Navigation.NavigateTo("/bosses");
+    }
+
+    public class LocationViewModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public bool IsSelected { get; set; }
     }
 }

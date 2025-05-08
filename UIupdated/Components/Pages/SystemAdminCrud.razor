@@ -8,88 +8,102 @@
 
 <PageTitle>System Admins</PageTitle>
 
-<h3>System Admins</h3>
+<div class="page-container">
+    <h3 class="title">System Admins</h3>
 
-@if (isLoading)
-{
-    <p>Loading...</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var admin in systemAdmins)
-            {
+    @if (isLoading)
+    {
+        <p>Loading...</p>
+    }
+    else
+    {
+        <table class="styled-table">
+            <thead>
                 <tr>
-                    <td>@admin.FirstName</td>
-                    <td>@admin.LastName</td>
-                    <td>@admin.Email</td>
-                    <td>@admin.Phone</td>
-                    <td>
-                        <button class="btn btn-primary" @onclick="() => EditSystemAdmin(admin.Id)">Edit</button>
-                        <button class="btn btn-danger" @onclick="() => DeleteSystemAdmin(admin.Id)">Delete</button>
-                    </td>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Actions</th>
                 </tr>
-            }
-        </tbody>
-    </table>
-    <button class="btn btn-primary" @onclick="AddSystemAdmin">Add New System Admin</button>
-}
-
-@if (isEditing || isAdding)
-{
-    <EditForm Model="systemAdmin" OnValidSubmit="SaveSystemAdmin">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-
-        <div class="mb-3">
-            <label for="firstName" class="form-label">First Name</label>
-            <InputText id="firstName" class="form-control" @bind-Value="systemAdmin.FirstName" />
-        </div>
-        <div class="mb-3">
-            <label for="lastName" class="form-label">Last Name</label>
-            <InputText id="lastName" class="form-control" @bind-Value="systemAdmin.LastName" />
-        </div>
-        <div class="mb-3">
-            <label for="email" class="form-label">Email</label>
-            <InputText id="email" class="form-control" @bind-Value="systemAdmin.Email" />
-        </div>
-        <div class="mb-3">
-            <label for="phone" class="form-label">Phone</label>
-            <InputText id="phone" class="form-control" @bind-Value="systemAdmin.Phone" />
-        </div>
-        <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <InputText id="password" class="form-control" @bind-Value="systemAdmin.Password" />
-        </div>
-        <div class="mb-3">
-            <label for="bossId" class="form-label">Boss</label>
-            <InputSelect id="bossId" class="form-control" @bind-Value="systemAdmin.BossId">
-                <option value="">Select a boss</option>
-                @foreach (var boss in bosses)
+            </thead>
+            <tbody>
+                @foreach (var admin in systemAdmins)
                 {
-                    <option value="@boss.Id">@boss.FirstName @boss.LastName</option>
+                    <tr>
+                        <td>@admin.FirstName</td>
+                        <td>@admin.LastName</td>
+                        <td>@admin.Email</td>
+                        <td>@admin.Phone</td>
+                        <td>
+                            <button class="btn btn-save" @onclick="() => EditSystemAdmin(admin.Id)">✏️</button>
+                            <button class="btn btn-delete" @onclick="() => DeleteSystemAdmin(admin.Id)">🗑️</button>
+                        </td>
+                    </tr>
                 }
-            </InputSelect>
-        </div>
+            </tbody>
+        </table>
 
-        <button type="submit" class="btn btn-primary">Save</button>
-        <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
-    </EditForm>
-}
+        <div class="form-actions">
+            <button class="btn btn-save" @onclick="AddSystemAdmin">➕ Add New System Admin</button>
+            <button type="button" class="btn btn-cancel" @onclick="GoBack">↩️ Back</button>
+            @code {
+            private void GoBack()
+            {
+                Navigation.NavigateTo("/admin/people");
+            }
+        }
+        </div>
+    }
+
+    @if (isEditing || isAdding)
+    {
+        <EditForm Model="systemAdmin" OnValidSubmit="SaveSystemAdmin" class="form-container">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label for="firstName">First Name</label>
+                <InputText id="firstName" @bind-Value="systemAdmin.FirstName" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label for="lastName">Last Name</label>
+                <InputText id="lastName" @bind-Value="systemAdmin.LastName" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <InputText id="email" @bind-Value="systemAdmin.Email" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone</label>
+                <InputText id="phone" @bind-Value="systemAdmin.Phone" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <InputText id="password" @bind-Value="systemAdmin.Password" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label for="bossId">Boss</label>
+                <InputSelect id="bossId" @bind-Value="systemAdmin.BossId" class="form-control">
+                    <option value="">Select a boss</option>
+                    @foreach (var boss in bosses)
+                    {
+                        <option value="@boss.Id">@boss.FirstName @boss.LastName</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-save">💾 Save</button>
+                <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+            </div>
+        </EditForm>
+    }
+</div>
 
 @code {
     private List<SystemAdminDto> systemAdmins = new();
-    private SystemAdminDto systemAdmin = new SystemAdminDto();
+    private SystemAdminDto systemAdmin = new();
     private List<BossDto> bosses = new();
     private bool isLoading = true;
     private bool isEditing = false;

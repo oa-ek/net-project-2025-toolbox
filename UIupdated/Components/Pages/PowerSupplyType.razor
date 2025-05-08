@@ -7,101 +7,113 @@
 
 <PageTitle>Power Supply Types</PageTitle>
 
-<h3>Power Supply Types</h3>
+<div class="page-container">
+    <h3 class="title">Power Supply Types</h3>
 
-@if (isLoading)
-{
-    <p>Loading...</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var powerSupplyType in powerSupplyTypes)
-            {
+    @if (isLoading)
+    {
+        <p class="loading-text">Loading...</p>
+    }
+    else
+    {
+        <table class="styled-table">
+            <thead>
                 <tr>
-                    <td>@powerSupplyType.Name</td>
-                    <td>
-                        <button class="btn btn-primary" @onclick="() => EditPowerSupplyType(powerSupplyType.Id)">Edit</button>
-                        <button class="btn btn-danger" @onclick="() => DeletePowerSupplyType(powerSupplyType.Id)">Delete</button>
-                    </td>
+                    <th class="table-header">Name</th>
+                    <th class="table-header">Actions</th>
                 </tr>
-            }
-        </tbody>
-    </table>
-    <button class="btn btn-primary" @onclick="AddPowerSupplyType">Add New Power Supply Type</button>
-}
+            </thead>
+            <tbody>
+                @foreach (var item in powerSupplyTypeList)
+                {
+                    <tr>
+                        <td class="table-cell">@item.Name</td>
+                        <td class="table-cell">
+                            <button class="btn btn-edit" @onclick="() => EditItem(item.Id)">✏️</button>
+                            <button class="btn btn-delete" @onclick="() => DeleteItem(item.Id)">🗑️</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <button class="btn btn-add" @onclick="AddItem">➕ Add New</button>
+        <button type="button" class="btn btn-cancel" @onclick="GoBack">↩️ Back</button>
+        @code {
+        private void GoBack()
+        {
+            Navigation.NavigateTo("/admin/people");
+        }
+    }
+    }
 
-@if (isEditing || isAdding)
-{
-    <EditForm Model="powerSupplyType" OnValidSubmit="SavePowerSupplyType">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+    @if (isEditing || isAdding)
+    {
+        <EditForm Model="currentItem" OnValidSubmit="SaveItem">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-        <div class="mb-3">
-            <label for="name" class="form-label">Name</label>
-            <InputText id="name" class="form-control" @bind-Value="powerSupplyType.Name" />
-            <ValidationMessage For="@(() => powerSupplyType.Name)" />
-        </div>
+            <div class="form-group">
+                <label for="name" class="form-label">Type Name</label>
+                <InputText id="name" class="form-input" @bind-Value="currentItem.Name" />
+                <ValidationMessage For="@(() => currentItem.Name)" />
+            </div>
 
-        <button type="submit" class="btn btn-primary">Save</button>
-        <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
-    </EditForm>
-}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-save">💾 Save</button>
+                <button type="button" class="btn btn-cancel" @onclick="Cancel">↩️ Cancel</button>
+            </div>
+        </EditForm>
+    }
+</div>
+
 
 @code {
-    private List<PowerSupplyTypeDto> powerSupplyTypes = new();
-    private PowerSupplyTypeDto powerSupplyType = new PowerSupplyTypeDto();
+    private List<PowerSupplyTypeDto> powerSupplyTypeList = new();
+    private PowerSupplyTypeDto currentItem = new();
     private bool isLoading = true;
     private bool isEditing = false;
     private bool isAdding = false;
 
     protected override async Task OnInitializedAsync()
     {
-        powerSupplyTypes = (await PowerSupplyTypeService.GetAllAsync()).ToList();
+        powerSupplyTypeList = (await PowerSupplyTypeService.GetAllAsync()).ToList();
         isLoading = false;
     }
 
-    private void AddPowerSupplyType()
+    private void AddItem()
     {
-        powerSupplyType = new PowerSupplyTypeDto();
+        currentItem = new PowerSupplyTypeDto();
         isAdding = true;
         isEditing = false;
     }
 
-    private async Task EditPowerSupplyType(int id)
+    private async Task EditItem(int id)
     {
-        powerSupplyType = await PowerSupplyTypeService.GetByIdAsync(id);
+        currentItem = await PowerSupplyTypeService.GetByIdAsync(id);
         isEditing = true;
         isAdding = false;
     }
 
-    private async Task SavePowerSupplyType()
+    private async Task SaveItem()
     {
         if (isEditing)
         {
-            await PowerSupplyTypeService.UpdateAsync(powerSupplyType.Id, powerSupplyType);
+            await PowerSupplyTypeService.UpdateAsync(currentItem.Id, currentItem);
         }
         else if (isAdding)
         {
-            await PowerSupplyTypeService.AddAsync(powerSupplyType);
+            await PowerSupplyTypeService.AddAsync(currentItem);
         }
 
-        powerSupplyTypes = (await PowerSupplyTypeService.GetAllAsync()).ToList();
+        powerSupplyTypeList = (await PowerSupplyTypeService.GetAllAsync()).ToList();
         isEditing = false;
         isAdding = false;
     }
 
-    private async Task DeletePowerSupplyType(int id)
+    private async Task DeleteItem(int id)
     {
         await PowerSupplyTypeService.DeleteAsync(id);
-        powerSupplyTypes = (await PowerSupplyTypeService.GetAllAsync()).ToList();
+        powerSupplyTypeList = (await PowerSupplyTypeService.GetAllAsync()).ToList();
     }
 
     private void Cancel()

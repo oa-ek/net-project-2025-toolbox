@@ -7,57 +7,62 @@
 
 <PageTitle>Tool Types</PageTitle>
 
-<h3>Tool Types</h3>
+<div class="page-container">
+    <h3 class="title">Tool Types</h3>
 
-@if (isLoading)
-{
-    <p>Loading...</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var toolType in toolTypes)
-            {
+    @if (isLoading)
+    {
+        <p class="loading-text">Loading...</p>
+    }
+    else
+    {
+        <table class="styled-table">
+            <thead>
                 <tr>
-                    <td>@toolType.Name</td>
-                    <td>
-                        <button class="btn btn-primary" @onclick="() => EditToolType(toolType.Id)">Edit</button>
-                        <button class="btn btn-danger" @onclick="() => DeleteToolType(toolType.Id)">Delete</button>
-                    </td>
+                    <th class="table-header">Name</th>
+                    <th class="table-header">Actions</th>
                 </tr>
-            }
-        </tbody>
-    </table>
-    <button class="btn btn-primary" @onclick="AddToolType">Add New Tool Type</button>
-}
+            </thead>
+            <tbody>
+                @foreach (var toolType in toolTypes)
+                {
+                    <tr>
+                        <td class="table-cell">@toolType.Name</td>
+                        <td class="table-cell">
+                            <button class="btn btn-edit" @onclick="() => EditToolType(toolType.Id)">✏️</button>
+                            <button class="btn btn-delete" @onclick="() => DeleteToolType(toolType.Id)">🗑️</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <button class="btn btn-add" @onclick="AddToolType">➕ Add New Tool Type</button>
+        <button type="button" class="btn btn-cancel" @onclick="GoBack">↩️ Back</button>
+    }
 
-@if (isEditing || isAdding)
-{
-    <EditForm Model="toolType" OnValidSubmit="SaveToolType">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+    @if (isEditing || isAdding)
+    {
+        <EditForm Model="toolType" OnValidSubmit="SaveToolType">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-        <div class="mb-3">
-            <label for="name" class="form-label">Name</label>
-            <InputText id="name" class="form-control" @bind-Value="toolType.Name" />
-            <ValidationMessage For="@(() => toolType.Name)" />
-        </div>
+            <div class="form-group">
+                <label for="name" class="form-label">Name</label>
+                <InputText id="name" class="form-input" @bind-Value="toolType.Name" />
+                <ValidationMessage For="@(() => toolType.Name)" />
+            </div>
 
-        <button type="submit" class="btn btn-primary">Save</button>
-        <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
-    </EditForm>
-}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-save">💾 Save</button>
+                <button type="button" class="btn btn-cancel" @onclick="Cancel">Cancel</button>
+            </div>
+        </EditForm>
+    }
+</div>
 
 @code {
     private List<ToolTypeDto> toolTypes = new();
-    private ToolTypeDto toolType = new ToolTypeDto();
+    private ToolTypeDto toolType = new();
     private bool isLoading = true;
     private bool isEditing = false;
     private bool isAdding = false;
@@ -70,7 +75,7 @@ else
 
     private void AddToolType()
     {
-        toolType = new ToolTypeDto();
+        toolType = new();
         isAdding = true;
         isEditing = false;
     }
@@ -85,13 +90,9 @@ else
     private async Task SaveToolType()
     {
         if (isEditing)
-        {
             await ToolTypeService.UpdateAsync(toolType.Id, toolType);
-        }
         else if (isAdding)
-        {
             await ToolTypeService.AddAsync(toolType);
-        }
 
         toolTypes = (await ToolTypeService.GetAllAsync()).ToList();
         isEditing = false;
@@ -108,5 +109,10 @@ else
     {
         isEditing = false;
         isAdding = false;
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/admin/tools");
     }
 }

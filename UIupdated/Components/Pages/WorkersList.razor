@@ -7,44 +7,56 @@
 
 <PageTitle>Workers</PageTitle>
 
-<h3>Workers</h3>
+<div class="page-container">
+    <h3 class="title">Workers</h3>
 
-@if (isLoading)
-{
-    <p>Loading...</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Position</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var worker in workers)
-            {
+    @if (isLoading)
+    {
+        <p>Loading...</p>
+    }
+    else
+    {
+        <table class="styled-table">
+            <thead>
                 <tr>
-                    <td>@worker.FirstName</td>
-                    <td>@worker.LastName</td>
-                    <td>@worker.Email</td>
-                    <td>@worker.Phone</td>
-                    <td>@worker.PositionName</td>
-                    <td>
-                        <button class="btn btn-primary" @onclick="() => EditWorker(worker.Id)">Edit</button>
-                        <button class="btn btn-danger" @onclick="() => DeleteWorker(worker.Id)">Delete</button>
-                    </td>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Position</th>
+                    <th>Actions</th>
                 </tr>
+            </thead>
+            <tbody>
+                @foreach (var worker in workers)
+                {
+                    <tr>
+                        <td>@worker.FirstName</td>
+                        <td>@worker.LastName</td>
+                        <td>@worker.Email</td>
+                        <td>@worker.Phone</td>
+                        <td>@worker.PositionName</td>
+                        <td>
+                            <button class="btn btn-save" @onclick="() => EditWorker(worker.Id)">✏️</button>
+                            <button class="btn btn-delete" @onclick="() => DeleteWorker(worker.Id)">🗑️</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="form-actions">
+            <button class="btn btn-save" @onclick="AddWorker">➕ Add New Worker</button>
+            <button type="button" class="btn btn-cancel" @onclick="GoBack">↩️ Back</button>
+            @code {
+            private void GoBack()
+            {
+                Navigation.NavigateTo("/admin/people");
             }
-        </tbody>
-    </table>
-    <button class="btn btn-primary" @onclick="AddWorker">Add New Worker</button>
-}
+        }
+        </div>
+    }
+</div>
 
 @code {
     private List<WorkerDto> workers = new List<WorkerDto>();
