@@ -8,75 +8,80 @@
 
 <PageTitle>Positions</PageTitle>
 
-<h3>Positions</h3>
+<div class="page-container">
+    <h3 class="title">Positions</h3>
 
-@if (isLoading)
-{
-    <p>Loading...</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Salary Per Hour</th>
-                <th>Boss</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var position in positions)
-            {
+    @if (isLoading)
+    {
+        <p class="loading-text">Loading...</p>
+    }
+    else
+    {
+        <table class="styled-table">
+            <thead>
                 <tr>
-                    <td>@position.Name</td>
-                    <td>@position.SalaryPerHour</td>
-                    <td>@position.BossName</td>
-                    <td>
-                        <button class="btn btn-primary" @onclick="() => EditPosition(position.Id)">Edit</button>
-                        <button class="btn btn-danger" @onclick="() => DeletePosition(position.Id)">Delete</button>
-                    </td>
+                    <th class="table-header">Name</th>
+                    <th class="table-header">Salary Per Hour</th>
+                    <th class="table-header">Boss</th>
+                    <th class="table-header">Actions</th>
                 </tr>
-            }
-        </tbody>
-    </table>
-    <button class="btn btn-primary" @onclick="AddPosition">Add New Position</button>
-}
-
-@if (isEditing || isAdding)
-{
-    <EditForm Model="position" OnValidSubmit="SavePosition">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-
-        <div class="mb-3">
-            <label for="name" class="form-label">Name</label>
-            <InputText id="name" class="form-control" @bind-Value="position.Name" />
-            <ValidationMessage For="@(() => position.Name)" />
-        </div>
-
-        <div class="mb-3">
-            <label for="salaryPerHour" class="form-label">Salary Per Hour</label>
-            <InputNumber id="salaryPerHour" class="form-control" @bind-Value="position.SalaryPerHour" />
-            <ValidationMessage For="@(() => position.SalaryPerHour)" />
-        </div>
-
-        <div class="mb-3">
-            <label for="bossId" class="form-label">Boss</label>
-            <InputSelect id="bossId" class="form-control" @bind-Value="position.BossId">
-                <option value="">Select a boss</option>
-                @foreach (var boss in bosses)
+            </thead>
+            <tbody>
+                @foreach (var position in positions)
                 {
-                    <option value="@boss.Id">@boss.FirstName @boss.LastName</option>
+                    <tr>
+                        <td class="table-cell">@position.Name</td>
+                        <td class="table-cell">@position.SalaryPerHour</td>
+                        <td class="table-cell">@position.BossName</td>
+                        <td class="table-cell">
+                            <button class="btn btn-edit" @onclick="() => EditPosition(position.Id)">✏️</button>
+                            <button class="btn btn-delete" @onclick="() => DeletePosition(position.Id)">🗑️</button>
+                        </td>
+                    </tr>
                 }
-            </InputSelect>
-            <ValidationMessage For="@(() => position.BossId)" />
-        </div>
+            </tbody>
+        </table>
+        <button class="btn btn-add" @onclick="AddPosition">➕ Add New</button>
+        <button type="button" class="btn btn-cancel" @onclick="GoBack">↩️ Back</button>
+    }
 
-        <button type="submit" class="btn btn-primary">Save</button>
-        <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
-    </EditForm>
-}
+    @if (isEditing || isAdding)
+    {
+        <EditForm Model="position" OnValidSubmit="SavePosition">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label for="name" class="form-label">Name</label>
+                <InputText id="name" class="form-input" @bind-Value="position.Name" />
+                <ValidationMessage For="@(() => position.Name)" />
+            </div>
+
+            <div class="form-group">
+                <label for="salaryPerHour" class="form-label">Salary Per Hour</label>
+                <InputNumber id="salaryPerHour" class="form-input" @bind-Value="position.SalaryPerHour" />
+                <ValidationMessage For="@(() => position.SalaryPerHour)" />
+            </div>
+
+            <div class="form-group">
+                <label for="bossId" class="form-label">Boss</label>
+                <InputSelect id="bossId" class="form-input" @bind-Value="position.BossId">
+                    <option value="">Select a boss</option>
+                    @foreach (var boss in bosses)
+                    {
+                        <option value="@boss.Id">@boss.FirstName @boss.LastName</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => position.BossId)" />
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-save">💾 Save</button>
+                <button class="btn btn-cancel" @onclick="Cancel">↩️ Cancel</button>
+            </div>
+        </EditForm>
+    }
+</div>
 
 @code {
     private List<PositionDto> positions = new();
@@ -85,6 +90,11 @@ else
     private bool isLoading = true;
     private bool isEditing = false;
     private bool isAdding = false;
+
+        private void GoBack()
+    {
+        Navigation.NavigateTo("/admin/other");
+    }
 
     protected override async Task OnInitializedAsync()
     {

@@ -8,46 +8,57 @@
 
 <PageTitle>Locations</PageTitle>
 
-@if (locations == null)
-{
-    <p>Loading...</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Latitude</th>
-                <th>Longitude</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var location in locations)
-            {
-                <tr>
-                    <td>@location.Id</td>
-                    <td>@location.Name</td>
-                    <td>@location.Description</td>
-                    <td>@location.Latitute</td>
-                    <td>@location.Longitute</td>
-                    <td>
-                        <button class="btn btn-primary" @onclick="() => ViewWorkers(location.Id)">View Workers and Bosses</button>
-                        <button class="btn btn-warning" @onclick="() => EditLocation(location.Id)">Edit</button>
-                        <button class="btn btn-danger" @onclick="() => DeleteLocation(location.Id)">Delete</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-    <button class="btn btn-success" @onclick="AddLocation">Add New Location</button>
-}
+<div class="page-container">
+    <h3 class="title">Locations</h3>
 
+    @if (locations == null)
+    {
+        <p class="loading-text">Loading...</p>
+    }
+    else
+    {
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Latitude</th>
+                    <th>Longitude</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var location in locations)
+                {
+                    <tr>
+                        <td>@location.Id</td>
+                        <td>@location.Name</td>
+                        <td>@location.Description</td>
+                        <td>@location.Latitute</td>
+                        <td>@location.Longitute</td>
+                        <td>
+                            <button class="btn btn-edit" @onclick="() => ViewWorkers(location.Id)">View 🔎</button>
+                            <button class="btn btn-edit" @onclick="() => EditLocation(location.Id)">✏️</button>
+                            <button class="btn btn-delete" @onclick="() => DeleteLocation(location.Id)">🗑️</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="form-actions">
+            <button class="btn btn-add" @onclick="AddLocation">➕ Add New Location</button>
+            <button type="button" class="btn btn-cancel" @onclick="GoBack">↩️ Back</button>
+        </div>
+    }
+</div>
 @code {
     private List<LocationDto> locations;
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/admin/other");
+    }
 
     protected override async Task OnInitializedAsync()
     {

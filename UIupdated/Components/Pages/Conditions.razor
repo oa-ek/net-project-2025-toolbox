@@ -7,53 +7,58 @@
 
 <PageTitle>Conditions</PageTitle>
 
-<h3>Conditions</h3>
+<div class="page-container">
+    <h3 class="title">Conditions</h3>
 
-@if (isLoading)
-{
-    <p>Loading...</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var condition in conditions)
-            {
+    @if (isLoading)
+    {
+        <p class="loading-text">Loading...</p>
+    }
+    else
+    {
+        <table class="styled-table">
+            <thead>
                 <tr>
-                    <td>@condition.Name</td>
-                    <td>
-                        <button class="btn btn-primary" @onclick="() => EditCondition(condition.Id)">Edit</button>
-                        <button class="btn btn-danger" @onclick="() => DeleteCondition(condition.Id)">Delete</button>
-                    </td>
+                    <th class="table-header">Name</th>
+                    <th class="table-header">Actions</th>
                 </tr>
-            }
-        </tbody>
-    </table>
-    <button class="btn btn-primary" @onclick="AddCondition">Add New Condition</button>
-}
+            </thead>
+            <tbody>
+                @foreach (var condition in conditions)
+                {
+                    <tr>
+                        <td class="table-cell">@condition.Name</td>
+                        <td class="table-cell">
+                            <button class="btn btn-edit" @onclick="() => EditCondition(condition.Id)">✏️</button>
+                            <button class="btn btn-delete" @onclick="() => DeleteCondition(condition.Id)">🗑️</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <button class="btn btn-add" @onclick="AddCondition">➕ Add New</button>
+        <button type="button" class="btn btn-cancel" @onclick="GoBack">↩️ Back</button>
+    }
 
-@if (isEditing || isAdding)
-{
-    <EditForm Model="condition" OnValidSubmit="SaveCondition">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+    @if (isEditing || isAdding)
+    {
+        <EditForm Model="condition" OnValidSubmit="SaveCondition">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-        <div class="mb-3">
-            <label for="name" class="form-label">Name</label>
-            <InputText id="name" class="form-control" @bind-Value="condition.Name" />
-            <ValidationMessage For="@(() => condition.Name)" />
-        </div>
+            <div class="form-group">
+                <label for="name" class="form-label">Name</label>
+                <InputText id="name" class="form-input" @bind-Value="condition.Name" />
+                <ValidationMessage For="@(() => condition.Name)" />
+            </div>
 
-        <button type="submit" class="btn btn-primary">Save</button>
-        <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
-    </EditForm>
-}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-save">💾 Save</button>
+                <button class="btn btn-cancel" @onclick="Cancel">↩️ Cancel</button>
+            </div>
+        </EditForm>
+    }
+</div>
 
 @code {
     private List<ConditionDto> conditions = new();
@@ -61,6 +66,11 @@ else
     private bool isLoading = true;
     private bool isEditing = false;
     private bool isAdding = false;
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/admin/other");
+    }
 
     protected override async Task OnInitializedAsync()
     {
