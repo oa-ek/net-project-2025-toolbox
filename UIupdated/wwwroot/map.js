@@ -25,8 +25,8 @@ function initializeLocationsMap(locations) {
 
     // Додаємо маркери для кожної локації
     locations.forEach(location => {
-        if (location.latitude && location.longitude) {
-            const locMarker = L.marker([location.latitude, location.longitude]).addTo(map);
+        if (location.latitute && location.longitute) {
+            const locMarker = L.marker([location.latitute, location.longitute]).addTo(map);
             locMarker.bindPopup(`<b>${location.name}</b><br>${location.description}`);
         } else {
             console.warn('Invalid location data:', location);
