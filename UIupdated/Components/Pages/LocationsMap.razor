@@ -27,12 +27,18 @@ else
         {
             // Завантаження всіх локацій
             locations = (await LocationService.GetAllAsync()).ToList();
+            Console.WriteLine($"Loaded {locations.Count} locations.");
+            foreach (var location in locations)
+            {
+                Console.WriteLine($"Location: {location.Name}, Lat: {location.Latitute}, Lng: {location.Longitute}");
+            }
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error loading locations: {ex.Message}");
         }
     }
+
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
