@@ -1,11 +1,16 @@
 ﻿@page "/add-edit-worker/{WorkerId:int?}"
 @using Core.DTOs
 @using UIinterface.Services
+@using UIupdated.Services
 @inject WorkerService WorkerService
 @inject PositionService PositionService
 @inject BossService BossService
 @inject LocationService LocationService
 @inject NavigationManager Navigation
+@inject IUserService UserService
+@inject IJSRuntime JSRuntime
+@inject SystemAdminService SystemAdminService
+
 @rendermode InteractiveServer
 
 <PageTitle>Add/Edit Worker</PageTitle>
@@ -36,8 +41,14 @@
                         <ValidationMessage For="@(() => worker.LastName)" />
                     </div>
                     <div class="form-group">
-                        <label for="email" class="form-label">Email</label>
-                        <InputText id="email" class="form-input" @bind-Value="worker.Email" />
+                        <label for="userEmail" class="form-label">User Email</label>
+                        <InputSelect id="userEmail" class="form-input" @bind-Value="worker.Email">
+                            <option value="">Select user email</option>
+                            @foreach (var user in users)
+                            {
+                                <option value="@user.Email">@user.Email</option>
+                            }
+                        </InputSelect>
                         <ValidationMessage For="@(() => worker.Email)" />
                     </div>
                     <div class="form-group">
@@ -53,7 +64,7 @@
                 </div>
 
                 <div class="form-column">
-                   @* <div class="form-group">
+                    <div class="form-group">
                         <label for="locationId" class="form-label">Location</label>
                         <InputSelect id="locationId" class="form-input" @bind-Value="worker.LocationId">
                             <option value="">Select a location</option>
@@ -63,7 +74,7 @@
                             }
                         </InputSelect>
                         <ValidationMessage For="@(() => worker.LocationId)" />
-                    </div>*@
+                    </div>
                     <div class="form-group">
                         <label for="positionId" class="form-label">Position</label>
                         <InputSelect id="positionId" class="form-input" @bind-Value="worker.PositionId">
@@ -115,9 +126,10 @@
 @code {
     [Parameter] public int? WorkerId { get; set; }
     private WorkerDto worker = new WorkerDto();
-    private List<LocationDto> locations = new List<LocationDto>();
-    private List<PositionDto> positions = new List<PositionDto>();
-    private List<BossDto> bosses = new List<BossDto>();
+    private List<LocationDto> locations = new();
+    private List<PositionDto> positions = new();
+    private List<BossDto> bosses = new();
+    private List<UserDto> users = new();
     private bool isLoading = true;
     private bool isEditing = false;
 
@@ -126,17 +138,67 @@
         locations = (await LocationService.GetAllAsync()).ToList();
         positions = (await PositionService.GetAllAsync()).ToList();
         bosses = (await BossService.GetAllAsync()).ToList();
+        users = (await UserService.GetAllUsersAsync()).ToList();
+
+        var workers = await WorkerService.GetAllAsync();
+        var systemAdmins = await SystemAdminService.GetAllAsync();
+        var allBosses = await BossService.GetAllAsync();
+
+        // Збираємо всі зайняті email-и
+        var occupiedEmails = new HashSet<string>(
+            workers.Select(w => w.Email)
+            .Concat(systemAdmins.Select(a => a.Email))
+            .Concat(allBosses.Select(b => b.Email)),
+            StringComparer.OrdinalIgnoreCase
+        );
+
+        // Відображаємо лише вільні email-и
+        users = users
+            .Where(u => !occupiedEmails.Contains(u.Email ?? ""))
+            .ToList();
 
         if (WorkerId.HasValue)
         {
             worker = await WorkerService.GetByIdAsync(WorkerId.Value);
             isEditing = true;
+
+            // Додаємо email редагованого користувача назад у список, щоб не зник при редагуванні
+            if (!string.IsNullOrWhiteSpace(worker.Email) &&
+                !users.Any(u => u.Email == worker.Email))
+            {
+                var currentUser = await UserService.GetUserByEmailAsync(worker.Email);
+                if (currentUser is not null)
+                    users.Add(currentUser);
+            }
         }
+
         isLoading = false;
     }
 
+
     private async Task SaveWorker()
     {
+        if (!string.IsNullOrWhiteSpace(worker.Email))
+        {
+            var user = await UserService.GetUserByEmailAsync(worker.Email);
+            if (user is not null)
+            {
+                var roleAssigned = await UserService.AssignRoleAsync(user.Id, "Worker");
+                if (!roleAssigned)
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", $"❌ Не вдалося призначити роль Worker користувачу {user.Email}");
+                }
+                else
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", $"✅ Користувачу призначено роль Worker. ID: {user.Id}");
+                }
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", $"❌ Користувача з email {worker.Email} не знайдено");
+            }
+        }
+
         if (isEditing)
         {
             await WorkerService.UpdateAsync(worker.Id, worker);
@@ -145,6 +207,7 @@
         {
             await WorkerService.AddAsync(worker);
         }
+
         Navigation.NavigateTo("/workers");
     }
 
@@ -159,3 +222,4 @@
         Navigation.NavigateTo("/workers");
     }
 }
+
