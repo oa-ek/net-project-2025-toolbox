@@ -6,7 +6,8 @@ namespace Core
     {
         [Key]
         public int Id { get; set; }
-        public string Name { get; set; }
+        [Required]
+        public string Name { get; set; } = string.Empty;
 
         // navigation property
         public IEnumerable<PowerTool> PowerTools { get; set; }

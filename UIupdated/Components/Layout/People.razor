@@ -1,0 +1,42 @@
+﻿@page "/admin/people"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+
+
+<div class="admin-panel">
+    <h1 class="admin-title-crud">Admin Panel</h1>
+
+    <div class="image-gallery-crud">
+
+        <div class="image-item-crud" @onclick="NavigateToBoss">
+            <img src="Photos/Boss.png" alt="Other" class="gallery-image" />
+            <p class="image-caption-crud">Bosses</p>
+        </div>
+        <div class="image-item-crud" @onclick="NavigateToSystemAdmin">
+            <img src="Photos/admin.png" alt="Other" class="gallery-image" />
+            <p class="image-caption-crud">System Admins</p>
+        </div>
+        <div class="image-item-crud" @onclick="NavigateToWorkersList">
+            <img src="Photos/worker.png" alt="Other" class="gallery-image" />
+            <p class="image-caption-crud">Workers</p>
+        </div>
+    </div>
+</div>
+@code {
+    private void NavigateToBoss()
+    {
+        Navigation.NavigateTo("/bosses");
+    }
+}
+@code {
+    private void NavigateToSystemAdmin()
+    {
+        Navigation.NavigateTo("/systemadmins");
+    }
+}
+@code {
+    private void NavigateToWorkersList()
+    {
+        Navigation.NavigateTo("/workers");
+    }
+}

@@ -18,7 +18,7 @@ namespace Core
         public string Password { get; set; }
 
         // navigation properties
-        public IEnumerable<Location> Locations { get; set; }
+    public ICollection<Location> Locations { get; set; } = new List<Location>();
         public IEnumerable<Worker> Workers { get; set; }
         public IEnumerable<SystemAdmin> SystemAdmins { get; set; }
     }

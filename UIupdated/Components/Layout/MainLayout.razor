@@ -1,0 +1,17 @@
+﻿@inherits LayoutComponentBase
+
+<div class="d-flex flex-column min-vh-100">
+    <!-- Додаємо flexbox -->
+    <Header /> <!-- Хедер з інтегрованим меню -->
+
+    <div class="flex-grow-1">
+        <!-- Контент займає весь доступний простір -->
+        <main>
+            <article class="content px-4">
+                @Body
+            </article>
+        </main>
+    </div>
+
+    <Footer /> <!-- Футер прикріплений знизу -->
+</div>

@@ -1,0 +1,134 @@
+﻿@page "/toolmodels"
+@using Core.DTOs
+@using UIinterface.Services
+@inject ToolModelService ToolModelService
+@inject BrandService BrandService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Tool Models</PageTitle>
+
+<div class="page-container">
+    <h3 class="title">Tool Models</h3>
+
+    @if (isLoading)
+    {
+        <p class="loading-text">Loading...</p>
+    }
+    else
+    {
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th class="table-header">Name</th>
+                    <th class="table-header">Brand</th>
+                    <th class="table-header">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var toolModel in toolModels)
+                {
+                    <tr>
+                        <td class="table-cell">@toolModel.Name</td>
+                        <td class="table-cell">@brands.FirstOrDefault(b => b.Id == toolModel.BrandId)?.Name</td>
+                        <td class="table-cell">
+                            <button class="btn btn-edit" @onclick="() => EditToolModel(toolModel.Id)">✏️</button>
+                            <button class="btn btn-delete" @onclick="() => DeleteToolModel(toolModel.Id)">🗑️</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <button class="btn btn-add" @onclick="AddToolModel">➕ Add New Tool Model</button>
+        <button type="button" class="btn btn-cancel" @onclick="GoBack">↩️ Back</button>
+    }
+
+    @if (isEditing || isAdding)
+    {
+        <EditForm Model="toolModel" OnValidSubmit="SaveToolModel">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label for="name" class="form-label">Name</label>
+                <InputText id="name" class="form-input" @bind-Value="toolModel.Name" />
+                <ValidationMessage For="@(() => toolModel.Name)" />
+            </div>
+            <div class="form-group">
+                <label for="brandId" class="form-label">Brand</label>
+                <InputSelect id="brandId" class="form-input" @bind-Value="toolModel.BrandId">
+                    <option value="">Select a brand</option>
+                    @foreach (var brand in brands)
+                    {
+                        <option value="@brand.Id">@brand.Name</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => toolModel.BrandId)" />
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-save">💾 Save</button>
+                <button type="button" class="btn btn-cancel" @onclick="Cancel">Cancel</button>
+            </div>
+        </EditForm>
+    }
+</div>
+
+@code {
+    private List<ToolModelDto> toolModels = new();
+    private ToolModelDto toolModel = new();
+    private List<BrandDto> brands = new();
+    private bool isLoading = true;
+    private bool isEditing = false;
+    private bool isAdding = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        toolModels = (await ToolModelService.GetAllAsync()).ToList();
+        brands = (await BrandService.GetAllAsync()).ToList();
+        isLoading = false;
+    }
+
+    private void AddToolModel()
+    {
+        toolModel = new();
+        isAdding = true;
+        isEditing = false;
+    }
+
+    private async Task EditToolModel(int id)
+    {
+        toolModel = await ToolModelService.GetByIdAsync(id);
+        isEditing = true;
+        isAdding = false;
+    }
+
+    private async Task SaveToolModel()
+    {
+        if (isEditing)
+            await ToolModelService.UpdateAsync(toolModel.Id, toolModel);
+        else if (isAdding)
+            await ToolModelService.AddAsync(toolModel);
+
+        toolModels = (await ToolModelService.GetAllAsync()).ToList();
+        isEditing = false;
+        isAdding = false;
+    }
+
+    private async Task DeleteToolModel(int id)
+    {
+        await ToolModelService.DeleteAsync(id);
+        toolModels = (await ToolModelService.GetAllAsync()).ToList();
+    }
+
+    private void Cancel()
+    {
+        isEditing = false;
+        isAdding = false;
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/admin/tools");
+    }
+}

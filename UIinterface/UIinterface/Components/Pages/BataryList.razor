@@ -1,0 +1,80 @@
+﻿@page "/bataries"
+@using Core.DTOs
+@using UIinterface.Services
+@inject BataryService BataryService
+@inject BataryModelService BataryModelService
+@inject ConditionService ConditionService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Bataries</PageTitle>
+
+<h3>Bataries</h3>
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Model</th>
+                <th>Condition</th>
+                <th>Serial Number</th>
+                <th>Number</th>
+                <th>Price</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var batary in bataries)
+            {
+                <tr>
+                    <td>@bataryModels.FirstOrDefault(m => m.Id == batary.BataryModelId)?.Name</td>
+                    <td>@conditions.FirstOrDefault(c => c.Id == batary.ConditionId)?.Name</td>
+                    <td>@batary.SerialNumber</td>
+                    <td>@batary.Number</td>
+                    <td>@batary.Price</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => EditBatary(batary.Id)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteBatary(batary.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button class="btn btn-primary" @onclick="AddBatary">Add New Batary</button>
+}
+
+@code {
+    private List<BataryDto> bataries = new();
+    private List<BataryModelDto> bataryModels = new();
+    private List<ConditionDto> conditions = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        bataries = (await BataryService.GetAllAsync()).ToList();
+        bataryModels = (await BataryModelService.GetAllAsync()).ToList();
+        conditions = (await ConditionService.GetAllAsync()).ToList();
+        isLoading = false;
+    }
+
+    private void AddBatary()
+    {
+        Navigation.NavigateTo("/bataries/addedit");
+    }
+
+    private void EditBatary(int id)
+    {
+        Navigation.NavigateTo($"/bataries/addedit/{id}");
+    }
+
+    private async Task DeleteBatary(int id)
+    {
+        await BataryService.DeleteAsync(id);
+        bataries = (await BataryService.GetAllAsync()).ToList();
+    }
+}

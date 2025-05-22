@@ -1,0 +1,149 @@
+﻿@page "/positions"
+@using Core.DTOs
+@using UIinterface.Services
+@inject PositionService PositionService
+@inject BossService BossService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Positions</PageTitle>
+
+<h3>Positions</h3>
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Salary Per Hour</th>
+                <th>Boss</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var position in positions)
+            {
+                <tr>
+                    <td>@position.Name</td>
+                    <td>@position.SalaryPerHour</td>
+                    <td>@position.BossName</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => EditPosition(position.Id)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => DeletePosition(position.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button class="btn btn-primary" @onclick="AddPosition">Add New Position</button>
+}
+
+@if (isEditing || isAdding)
+{
+    <EditForm Model="position" OnValidSubmit="SavePosition">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <InputText id="name" class="form-control" @bind-Value="position.Name" />
+            <ValidationMessage For="@(() => position.Name)" />
+        </div>
+
+        <div class="mb-3">
+            <label for="salaryPerHour" class="form-label">Salary Per Hour</label>
+            <InputNumber id="salaryPerHour" class="form-control" @bind-Value="position.SalaryPerHour" />
+            <ValidationMessage For="@(() => position.SalaryPerHour)" />
+        </div>
+
+        <div class="mb-3">
+            <label for="bossId" class="form-label">Boss</label>
+            <InputSelect id="bossId" class="form-control" @bind-Value="position.BossId">
+                <option value="">Select a boss</option>
+                @foreach (var boss in bosses)
+                {
+                    <option value="@boss.Id">@boss.FirstName @boss.LastName</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => position.BossId)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    </EditForm>
+}
+
+@code {
+    private List<PositionDto> positions = new();
+    private PositionDto position = new PositionDto();
+    private List<BossDto> bosses = new();
+    private bool isLoading = true;
+    private bool isEditing = false;
+    private bool isAdding = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        positions = (await PositionService.GetAllAsync()).ToList();
+        bosses = (await BossService.GetAllAsync()).ToList();
+        isLoading = false;
+    }
+
+    private void AddPosition()
+    {
+        position = new PositionDto
+            {
+                Name = string.Empty,        
+                SalaryPerHour = 1,
+                BossId = bosses.FirstOrDefault()?.Id ?? 0
+            };
+        isAdding = true;
+        isEditing = false;
+    }
+
+
+    private async Task EditPosition(int id)
+    {
+        position = await PositionService.GetByIdAsync(id);
+        isEditing = true;
+        isAdding = false;
+    }
+
+    private async Task SavePosition()
+    {
+        Console.WriteLine($"Name: '{position.Name}'");
+        Console.WriteLine($"Salary: {position.SalaryPerHour}");
+        Console.WriteLine($"BossId: {position.BossId}");
+
+        if (string.IsNullOrWhiteSpace(position.Name))
+        {
+            Console.WriteLine("⚠️ Position Name is null or empty!");
+        }
+
+        if (isEditing)
+            await PositionService.UpdateAsync(position.Id, position);
+        else if (isAdding)
+            await PositionService.AddAsync(position);
+
+        positions = (await PositionService.GetAllAsync()).ToList();
+        isEditing = false;
+        isAdding = false;
+    }
+
+
+    private async Task DeletePosition(int id)
+    {
+        await PositionService.DeleteAsync(id);
+        positions = (await PositionService.GetAllAsync()).ToList();
+    }
+
+    private void Cancel()
+    {
+        isEditing = false;
+        isAdding = false;
+    }
+}

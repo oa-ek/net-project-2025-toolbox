@@ -1,0 +1,93 @@
+﻿@page "/handtools"
+@using Core.DTOs
+@using UIinterface.Services
+@inject HandToolService HandToolService
+@inject BrandService BrandService
+@inject ConditionService ConditionService
+@inject ToolTypeService ToolTypeService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Hand Tools</PageTitle>
+
+<div class="page-container">
+    <h3 class="title">Hand Tools</h3>
+
+    @if (isLoading)
+    {
+        <p>Loading...</p>
+    }
+    else
+    {
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Brand</th>
+                    <th>Condition</th>
+                    <th>Tool Type</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var handTool in handTools)
+                {
+                    <tr>
+                        <td>@brands.FirstOrDefault(b => b.Id == handTool.BrandId)?.Name</td>
+                        <td>@conditions.FirstOrDefault(c => c.Id == handTool.ConditionId)?.Name</td>
+                        <td>@toolTypes.FirstOrDefault(t => t.Id == handTool.ToolTypeId)?.Name</td>
+                        <td>@handTool.Price</td>
+                        <td>
+                            <button class="btn btn-save" @onclick="() => EditHandTool(handTool.Id)">✏️</button>
+                            <button class="btn btn-delete" @onclick="() => DeleteHandTool(handTool.Id)">🗑️</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="form-actions">
+            <button class="btn btn-save" @onclick="AddHandTool">➕ Add New Hand Tool</button>
+            <button type="button" class="btn btn-cancel" @onclick="GoBack">↩️ Back</button>
+            @code {
+            private void GoBack()
+            {
+                Navigation.NavigateTo("/admin/tools");
+            }
+        }
+        </div>
+    }
+</div>
+
+@code {
+    private List<HandToolDto> handTools = new();
+    private List<BrandDto> brands = new();
+    private List<ConditionDto> conditions = new();
+    private List<ToolTypeDto> toolTypes = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        handTools = (await HandToolService.GetAllAsync()).ToList();
+        brands = (await BrandService.GetAllAsync()).ToList();
+        conditions = (await ConditionService.GetAllAsync()).ToList();
+        toolTypes = (await ToolTypeService.GetAllAsync()).ToList();
+        isLoading = false;
+    }
+
+    private void AddHandTool()
+    {
+        Navigation.NavigateTo("/handtools/addedit");
+    }
+
+    private void EditHandTool(int id)
+    {
+        Navigation.NavigateTo($"/handtools/addedit/{id}");
+    }
+
+    private async Task DeleteHandTool(int id)
+    {
+        await HandToolService.DeleteAsync(id);
+        handTools = (await HandToolService.GetAllAsync()).ToList();
+    }
+}

@@ -1,0 +1,161 @@
+﻿@page "/add-edit-worker/{WorkerId:int?}"
+@using Core.DTOs
+@using UIinterface.Services
+@inject WorkerService WorkerService
+@inject PositionService PositionService
+@inject BossService BossService
+@inject LocationService LocationService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Add/Edit Worker</PageTitle>
+
+<div class="page-container">
+    <h3 class="title">@(isEditing ? "Edit Worker" : "Add Worker")</h3>
+
+    @if (isLoading)
+    {
+        <p>Loading...</p>
+    }
+    else
+    {
+        <EditForm Model="worker" OnValidSubmit="SaveWorker">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-columns">
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="firstName" class="form-label">First Name</label>
+                        <InputText id="firstName" class="form-input" @bind-Value="worker.FirstName" />
+                        <ValidationMessage For="@(() => worker.FirstName)" />
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName" class="form-label">Last Name</label>
+                        <InputText id="lastName" class="form-input" @bind-Value="worker.LastName" />
+                        <ValidationMessage For="@(() => worker.LastName)" />
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email</label>
+                        <InputText id="email" class="form-input" @bind-Value="worker.Email" />
+                        <ValidationMessage For="@(() => worker.Email)" />
+                    </div>
+                    <div class="form-group">
+                        <label for="phone" class="form-label">Phone</label>
+                        <InputText id="phone" class="form-input" @bind-Value="worker.Phone" />
+                        <ValidationMessage For="@(() => worker.Phone)" />
+                    </div>
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <InputText id="password" class="form-input" @bind-Value="worker.Password" type="password" />
+                        <ValidationMessage For="@(() => worker.Password)" />
+                    </div>
+                </div>
+
+                <div class="form-column">
+                   @* <div class="form-group">
+                        <label for="locationId" class="form-label">Location</label>
+                        <InputSelect id="locationId" class="form-input" @bind-Value="worker.LocationId">
+                            <option value="">Select a location</option>
+                            @foreach (var location in locations)
+                            {
+                                <option value="@location.Id">@location.Name</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => worker.LocationId)" />
+                    </div>*@
+                    <div class="form-group">
+                        <label for="positionId" class="form-label">Position</label>
+                        <InputSelect id="positionId" class="form-input" @bind-Value="worker.PositionId">
+                            <option value="">Select a position</option>
+                            @foreach (var position in positions)
+                            {
+                                <option value="@position.Id">@position.Name</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => worker.PositionId)" />
+                    </div>
+                    <div class="form-group">
+                        <label for="bossId" class="form-label">Boss</label>
+                        <InputSelect id="bossId" class="form-input" @bind-Value="worker.BossId">
+                            <option value="">Select a boss</option>
+                            @foreach (var boss in bosses)
+                            {
+                                <option value="@boss.Id">@boss.FirstName @boss.LastName</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => worker.BossId)" />
+                    </div>
+ @* <!--                  <div class="form-group">
+                        <label for="latitute" class="form-label">Latitude</label>
+                        <InputNumber id="latitute" class="form-input" @bind-Value="worker.Latitute" />
+                        <ValidationMessage For="@(() => worker.Latitute)" />
+                    </div>
+                    <div class="form-group">
+                        <label for="longitute" class="form-label">Longitude</label>
+                        <InputNumber id="longitute" class="form-input" @bind-Value="worker.Longitute" />
+                        <ValidationMessage For="@(() => worker.Longitute)" />
+                    </div>
+                                      -->*@
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-save">💾 Save</button>
+                @if (isEditing)
+                {
+                    <button class="btn btn-delete" @onclick="DeleteWorker">🗑️ Delete</button>
+                }
+                <button class="btn btn-cancel" @onclick="Cancel">↩️ Cancel</button>
+            </div>
+        </EditForm>
+    }
+</div>
+
+@code {
+    [Parameter] public int? WorkerId { get; set; }
+    private WorkerDto worker = new WorkerDto();
+    private List<LocationDto> locations = new List<LocationDto>();
+    private List<PositionDto> positions = new List<PositionDto>();
+    private List<BossDto> bosses = new List<BossDto>();
+    private bool isLoading = true;
+    private bool isEditing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        locations = (await LocationService.GetAllAsync()).ToList();
+        positions = (await PositionService.GetAllAsync()).ToList();
+        bosses = (await BossService.GetAllAsync()).ToList();
+
+        if (WorkerId.HasValue)
+        {
+            worker = await WorkerService.GetByIdAsync(WorkerId.Value);
+            isEditing = true;
+        }
+        isLoading = false;
+    }
+
+    private async Task SaveWorker()
+    {
+        if (isEditing)
+        {
+            await WorkerService.UpdateAsync(worker.Id, worker);
+        }
+        else
+        {
+            await WorkerService.AddAsync(worker);
+        }
+        Navigation.NavigateTo("/workers");
+    }
+
+    private async Task DeleteWorker()
+    {
+        await WorkerService.DeleteAsync(worker.Id);
+        Navigation.NavigateTo("/workers");
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/workers");
+    }
+}

@@ -1,0 +1,112 @@
+﻿@page "/brands"
+@using Core.DTOs
+@using UIinterface.Services
+@inject BrandService BrandService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Brands</PageTitle>
+
+<h3>Brands</h3>
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var brand in brands)
+            {
+                <tr>
+                    <td>@brand.Name</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => EditBrand(brand.Id)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteBrand(brand.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button class="btn btn-primary" @onclick="AddBrand">Add New Brand</button>
+}
+
+@if (isEditing || isAdding)
+{
+    <EditForm Model="brand" OnValidSubmit="SaveBrand">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <InputText id="name" class="form-control" @bind-Value="brand.Name" />
+            <ValidationMessage For="@(() => brand.Name)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+    </EditForm>
+}
+
+@code {
+    private List<BrandDto> brands = new();
+    private BrandDto brand = new BrandDto();
+    private bool isLoading = true;
+    private bool isEditing = false;
+    private bool isAdding = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        brands = (await BrandService.GetAllAsync()).ToList();
+        isLoading = false;
+    }
+
+    private void AddBrand()
+    {
+        brand = new BrandDto();
+        isAdding = true;
+        isEditing = false;
+    }
+
+    private async Task EditBrand(int id)
+    {
+        brand = await BrandService.GetByIdAsync(id);
+        isEditing = true;
+        isAdding = false;
+    }
+
+    private async Task SaveBrand()
+    {
+        if (isEditing)
+        {
+            await BrandService.UpdateAsync(brand.Id, brand);
+        }
+        else if (isAdding)
+        {
+            await BrandService.AddAsync(brand);
+        }
+
+        brands = (await BrandService.GetAllAsync()).ToList();
+        isEditing = false;
+        isAdding = false;
+    }
+
+    private async Task DeleteBrand(int id)
+    {
+        await BrandService.DeleteAsync(id);
+        brands = (await BrandService.GetAllAsync()).ToList();
+    }
+
+    private void Cancel()
+    {
+        isEditing = false;
+        isAdding = false;
+    }
+}

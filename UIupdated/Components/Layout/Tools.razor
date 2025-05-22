@@ -1,0 +1,69 @@
+﻿@page "/admin/tools"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+
+
+
+<div class="admin-panel">
+    <h1 class="admin-title-crud">Admin Panel</h1>
+
+    <div class="image-gallery-crud">
+
+        <div class="image-item-crud" @onclick="NavigateToHandTools">
+            <img src="Photos/handtool.png" alt="Other" class="gallery-image" />
+            <p class="image-caption-crud">Hand Tools</p>
+        </div>
+        <div class="image-item-crud" @onclick="NavigateToPowerTools">
+            <img src="Photos/powertool.png" alt="Other" class="gallery-image" />
+            <p class="image-caption-crud">Power Tools</p>
+        </div>
+        <div class="image-item-crud" @onclick="NavigateToBatary">
+            <img src="Photos/batary.png" alt="Other" class="gallery-image" />
+            <p class="image-caption-crud">Bataries</p>
+        </div>
+    </div>
+    <div class="admin-buttons">
+        <button class="custom-button-crud" @onclick="NavigateToToolTypes">Tool Types</button>
+        <button class="custom-button-crud" @onclick="NavigateToToolModels">Tool Models</button>
+        <button class="custom-button-crud" @onclick="NavigateBataryModel">Batary Model</button>
+
+    </div>
+</div>
+
+@code {
+    private void NavigateToToolTypes()
+    {
+        Navigation.NavigateTo("/tooltypes");
+    }
+}
+@code {
+    private void NavigateToToolModels()
+    {
+        Navigation.NavigateTo("/toolmodels");
+    }
+}
+@code {
+    private void NavigateBataryModel()
+    {
+        Navigation.NavigateTo("/batarymodels");
+    }
+}
+
+@code {
+    private void NavigateToHandTools()
+    {
+        Navigation.NavigateTo("/handtools");
+    }
+}
+@code {
+    private void NavigateToPowerTools()
+    {
+        Navigation.NavigateTo("/powertools");
+    }
+}
+@code {
+    private void NavigateToBatary()
+    {
+        Navigation.NavigateTo("/bataries");
+    }
+}

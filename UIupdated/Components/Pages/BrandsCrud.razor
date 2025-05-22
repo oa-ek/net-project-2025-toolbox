@@ -1,0 +1,123 @@
+﻿@page "/brands"
+@using Core.DTOs
+@using UIinterface.Services
+@inject BrandService BrandService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Brands</PageTitle>
+
+<div class="page-container">
+    <h3 class="title">Brands</h3>
+
+    @if (isLoading)
+    {
+        <p class="loading-text">Loading...</p>
+    }
+    else
+    {
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th class="table-header">Name</th>
+                    <th class="table-header">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var brand in brands)
+                {
+                    <tr>
+                        <td class="table-cell">@brand.Name</td>
+                        <td class="table-cell">
+                            <button class="btn btn-edit" @onclick="() => EditBrand(brand.Id)">Edit</button>
+                            <button class="btn btn-delete" @onclick="() => DeleteBrand(brand.Id)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <button class="btn btn-add" @onclick="AddBrand">Add New Brand</button>
+        <button class="btn btn-cancel" @onclick="GoBack">↩️ Back</button>
+    }
+
+    @if (isEditing || isAdding)
+    {
+        <EditForm Model="brand" OnValidSubmit="SaveBrand">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label for="name" class="form-label">Name</label>
+                <InputText id="name" class="form-input" @bind-Value="brand.Name" />
+                <ValidationMessage For="@(() => brand.Name)" />
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-save">Save</button>
+                <button type="button" class="btn btn-cancel" @onclick="Cancel">Cancel</button>
+            </div>
+        </EditForm>
+    }
+</div>
+
+@code {
+    private List<BrandDto> brands = new();
+    private BrandDto brand = new BrandDto();
+    private bool isLoading = true;
+    private bool isEditing = false;
+    private bool isAdding = false;
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/admin/other");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        brands = (await BrandService.GetAllAsync()).ToList();
+        isLoading = false;
+    }
+
+    private void AddBrand()
+    {
+        brand = new BrandDto();
+        isAdding = true;
+        isEditing = false;
+    }
+
+    private async Task EditBrand(int id)
+    {
+        brand = await BrandService.GetByIdAsync(id);
+        isEditing = true;
+        isAdding = false;
+    }
+
+    private async Task SaveBrand()
+    {
+        if (isEditing)
+        {
+            await BrandService.UpdateAsync(brand.Id, brand);
+        }
+        else if (isAdding)
+        {
+            await BrandService.AddAsync(brand);
+        }
+
+        brands = (await BrandService.GetAllAsync()).ToList();
+        isEditing = false;
+        isAdding = false;
+    }
+
+    private async Task DeleteBrand(int id)
+    {
+        await BrandService.DeleteAsync(id);
+        brands = (await BrandService.GetAllAsync()).ToList();
+    }
+
+    private void Cancel()
+    {
+        isEditing = false;
+        isAdding = false;
+    }
+}

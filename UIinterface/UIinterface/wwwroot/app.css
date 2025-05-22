@@ -13,7 +13,7 @@ a, .btn-link {
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 .content {
@@ -99,19 +99,7 @@ header {
     margin-right: 1rem; /* Відступ праворуч */
     border-radius: 50% /* Закруглені кути */
 }
-.custom-button {
-    background-color: #ff5733; /* Помаранчевий колір */
-    color: white; /* Білий текст */
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 0.25rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
 
-    .custom-button:hover {
-        background-color: #e74c3c; /* Темніший помаранчевий при наведенні */
-    }
 
 
 footer {
@@ -136,3 +124,382 @@ footer {
 .min-vh-100 {
     min-height: 100vh; /* Мінімальна висота сторінки */
 }
+/*404*/
+.error-title {
+    color: #dc3545;
+    font-size: 3rem;
+    text-align: center;
+}
+
+.error-message {
+    text-align: center;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.error-image {
+    display: block;
+    margin: 0 auto 1rem auto;
+    max-width: 50%;
+}
+/*404*/
+
+/*FOOTER*/
+/* Стиль посилань */
+.roww a {
+    text-decoration: none;
+    color: #ddd;
+    font-size: 1em;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+    .roww a:hover {
+        color: #fff;
+        transform: scale(1.1);
+    }
+
+/* Стиль списків */
+.roww ul {
+    width: 100%;
+    padding: 0;
+    list-style: none;
+}
+
+    .roww ul li {
+        display: inline-block;
+        margin: 0 20px;
+        font-size: 1em;
+    }
+
+/* Іконки соцмереж */
+.roww a i {
+    font-size: 2.2em;
+    margin: 0 10px;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+    .roww a i:hover {
+        color: #FFD700;
+        transform: rotate(10deg);
+    }
+
+/* Права резервовані */
+.roww:last-child {
+    font-size: 0.8em;
+    margin-top: 10px;
+    color: #ccc;
+}
+/*FOOTER*/
+
+/*ADMIN PANEL*/
+/* Загальний стиль для Admin Panel */
+.admin-panel {
+    max-width: 1000px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    border: 1px solid #ced4da;
+}
+
+/* Заголовок */
+.admin-title {
+    font-size: 2rem;
+    color: #343a40;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+/* Кнопки */
+.admin-buttons {
+    display: flex;
+    flex-wrap: wrap; /* Дозволяє переносити кнопки на новий рядок */
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.custom-button {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    min-width: 180px; /* Мінімальна ширина кнопки */
+    text-align: center;
+}
+
+    .custom-button:hover {
+        background-color: #6f0000;
+        transform: scale(1.05);
+    }
+
+    .custom-button:active {
+        background-color: #570000;
+        transform: scale(0.95);
+    }
+/*ADMIN PANEL*/
+
+
+/*Home page*/
+/* Hero Section */
+.hero-title {
+    font-size: 4rem;
+    color: #343a40;
+    margin-bottom: 10px;
+    font-family: '28 Days Later Cyr', sans-serif; /* Шрифт для заголовка */
+}
+
+.hero-description {
+    font-size: 1.25rem;
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+/* Info Section */
+.info-section {
+    text-align: center;
+    padding-bottom: 20px;
+    -webkit-align-items: inherit;
+    align-items: inherit;
+}
+
+    .info-section h2 {
+        font-size: 1.5rem;
+        color: #343a40;
+        margin-bottom: 30px;
+    }
+
+.features-cards {
+    display: flex;
+    flex-wrap: wrap; /* Дозволяє переносити картки на новий рядок */
+    justify-content: center; /* Центрує картки в рядку */
+    gap: 20px; /* Відстань між картками */
+    margin-top: 20px;
+}
+
+
+.card {
+    max-width: 300px; /* Максимальна ширина картки */
+    flex: 1 1 calc(33.333% - 20px); /* Картки займають третину ширини контейнера */
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+    }
+
+.card-icon {
+    font-size: 3rem;
+    color: #007bff;
+    margin-bottom: 15px;
+}
+
+.card h3 {
+    font-size: 1.5rem;
+    color: #343a40;
+    margin-bottom: 10px;
+}
+
+.card p {
+    font-size: 1rem;
+    color: #6c757d;
+}
+
+/*Home page*/
+
+/*ACCOUNT*/
+/* Manage Page Styles */
+/* Manage Page Styles */
+.manage-panel {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #f8f9fa; /* Світлий фон */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Тінь */
+    text-align: center;
+    border: 1px solid #e74c3c; /* Червона рамка */
+}
+
+.manage-title {
+    font-size: 2rem;
+    color: #e74c3c; /* Основний червоний текст */
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.manage-button {
+    background-color: #e74c3c; /* Основний червоний фон */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+    .manage-button:hover {
+        background-color: #6f0000; /* Темніший червоний при наведенні */
+        transform: scale(1.05); /* Легке збільшення */
+    }
+
+    .manage-button:active {
+        background-color: #570000; /* Ще темніший червоний при натисканні */
+        transform: scale(0.95); /* Легке зменшення */
+    }
+
+.manage-section {
+    margin-top: 30px;
+    text-align: left;
+}
+
+    .manage-section h3 {
+        font-size: 1.5rem;
+        color: #e74c3c; /* Основний червоний текст */
+        margin-bottom: 15px;
+    }
+
+    .manage-section p {
+        font-size: 1rem;
+        color: #6c757d;
+        margin-bottom: 10px;
+    }
+
+.manage-button-danger {
+    background-color: #e74c3c; /* Основний червоний фон */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+    .manage-button-danger:hover {
+        background-color: #6f0000; /* Темніший червоний при наведенні */
+        transform: scale(1.05); /* Легке збільшення */
+    }
+
+    .manage-button-danger:active {
+        background-color: #570000; /* Ще темніший червоний при натисканні */
+        transform: scale(0.95); /* Легке зменшення */
+    }
+/*ACCOUNT*/
+
+/*NAV MENU*/
+.nav-horizontal {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 0;
+    list-style: none;
+}
+
+    .nav-horizontal .nav-item {
+        margin: 0;
+    }
+
+    .nav-horizontal .nav-link {
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+        background-color: #f8f9fa;
+        color: #000;
+        text-decoration: none;
+        transition: background-color 0.2s;
+    }
+
+        .nav-horizontal .nav-link.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .nav-horizontal .nav-link:hover {
+            background-color: #e2e6ea;
+        }
+
+
+/*NAV MENU*/
+
+/*LOGIN-REGISTER*/
+.register-container {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 0px 0px;
+    text-align: center;
+}
+
+.title {
+    margin-bottom: 20px;
+    font-size: 2rem;
+}
+
+.form-box {
+    background-color: #f8f9fa;
+    padding: 0px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+}
+
+.input-group {
+    margin-bottom: 1rem;
+    gap: 10px;
+    text-align: left;
+}
+
+    .input-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+    }
+
+.input-control {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 1rem;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+    .btn-primary:hover {
+        background-color: #0b5ed7;
+    }
+
+.full-width {
+    width: 100%;
+}
+
+.external-section {
+    margin-top: 30px;
+}
+
+/*LOGIN-REGISTER*/

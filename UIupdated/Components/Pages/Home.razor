@@ -1,0 +1,89 @@
+@page "/"
+@using Core.DTOs
+@using UIinterface.Services
+@inject NavigationManager Navigation
+@inject LocationService LocationService
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
+
+<PageTitle>ToolTrack</PageTitle>
+
+<div class="info-section">
+    <h1 class="hero-title">ToolTrack</h1>
+    <p class="hero-description">
+        A modern system for tracking and managing tools, locations, and employees in your organization.
+    </p>
+
+    <!-- КАРТА ПІСЛЯ ОПИСУ -->
+    @if (locations == null)
+    {
+        <p>Loading map...</p>
+    }
+    else
+    {
+        <div id="map-multiple" style="height: 500px; width: 100%; margin-bottom: 2rem;"></div>
+    }
+
+    <h2>Features of ToolTrack</h2>
+    <div class="features-cards">
+        <div class="card">
+            <div class="card-icon">🧰</div>
+            <h3>Tool Inventory</h3>
+            <p>Keep track of all tools in your organization, including their current status and location.</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">📍</div>
+            <h3>Location Management</h3>
+            <p>Assign tools to specific locations and monitor their movement between departments or sites.</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">👷</div>
+            <h3>Employee Tracking</h3>
+            <p>Manage employees and assign tools to them for accountability and better resource management.</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">📊</div>
+            <h3>Usage History</h3>
+            <p>View detailed usage history of tools, including who used them and when.</p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<LocationDto> locations;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Завантаження всіх локацій
+            locations = (await LocationService.GetAllAsync()).ToList();
+            Console.WriteLine($"Loaded {locations.Count} locations.");
+            foreach (var location in locations)
+            {
+                Console.WriteLine($"Location: {location.Name}, Lat: {location.Latitute}, Lng: {location.Longitute}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error loading locations: {ex.Message}");
+        }
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (locations != null && locations.Any())
+        {
+            try
+            {
+                // Передача даних про локації в JavaScript
+                await JSRuntime.InvokeVoidAsync("initializeLocationsMap", locations);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error initializing map: {ex.Message}");
+            }
+        }
+    }
+}

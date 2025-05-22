@@ -1,0 +1,88 @@
+﻿@page "/bosses"
+@using Core.DTOs
+@using UIinterface.Services
+@inject BossService BossService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Bosses</PageTitle>
+
+<div class="page-container">
+    <h3 class="title">Bosses</h3>
+
+    @if (isLoading)
+    {
+        <p>Loading...</p>
+    }
+    else
+    {
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var boss in bosses)
+                {
+                    <tr>
+                        <td>@boss.FirstName</td>
+                        <td>@boss.LastName</td>
+                        <td>@boss.Email</td>
+                        <td>@boss.Phone</td>
+                        <td>
+                            <button class="btn btn-save" @onclick="() => EditBoss(boss.Id)">✏️</button>
+                            <button class="btn btn-delete" @onclick="() => DeleteBoss(boss.Id)">🗑️</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="form-actions">
+            <button class="btn btn-save" @onclick="AddBoss">➕ Add New Boss</button>
+            <button type="button" class="btn btn-cancel" @onclick="GoBack">↩️ Back</button>
+        </div>
+    }
+</div>
+@*            <button type="button" class="btn btn-cancel" @onclick="GoBack">↩️ Back</button>
+    @code {private void GoBack()
+    {
+        Navigation.NavigateTo("/admin/people");
+    }
+    }
+*@
+@code {
+    private List<BossDto> bosses = new();
+    private bool isLoading = true;
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/admin/people");
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        bosses = (await BossService.GetAllAsync()).ToList();
+        isLoading = false;
+    }
+
+    private void AddBoss()
+    {
+        Navigation.NavigateTo("/add-boss");
+    }
+
+    private void EditBoss(int id)
+    {
+        Navigation.NavigateTo($"/edit-boss/{id}");
+    }
+
+    private async Task DeleteBoss(int id)
+    {
+        await BossService.DeleteAsync(id);
+        bosses = (await BossService.GetAllAsync()).ToList();
+    }
+}

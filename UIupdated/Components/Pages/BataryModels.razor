@@ -1,0 +1,137 @@
+﻿@page "/batarymodels"
+@using Core.DTOs
+@using UIinterface.Services
+@inject BataryModelService BataryModelService
+@inject BrandService BrandService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Batary Models</PageTitle>
+<div class="page-container">
+<h3 class="title">Batary Models</h3>
+
+@if (isLoading)
+{
+    <p class="loading-text">Loading...</p>
+}
+else
+{
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th class="table-header">Name</th>
+                <th class="table-header">Brand</th>
+                <th class="table-header">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var bataryModel in bataryModels)
+            {
+                <tr>
+                    <td class="table-cell">@bataryModel.Name</td>
+                    <td class="table-cell">@brands.FirstOrDefault(b => b.Id == bataryModel.BrandId)?.Name</td>
+                    <td class="table-cell">
+                        <button class="btn btn-edit" @onclick="() => EditBataryModel(bataryModel.Id)">✏️</button>
+                        <button class="btn btn-delete" @onclick="() => DeleteBataryModel(bataryModel.Id)">🗑️</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button class="btn btn-add" @onclick="AddBataryModel">➕ Add New Batary Model</button>
+    <button type="button" class="btn btn-cancel" @onclick="GoBack">↩️ Back</button>
+}
+
+@if (isEditing || isAdding)
+{
+    <EditForm Model="bataryModel" OnValidSubmit="SaveBataryModel">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="name" class="form-label">Name</label>
+            <InputText id="name" class="form-input" @bind-Value="bataryModel.Name" />
+            <ValidationMessage For="@(() => bataryModel.Name)" />
+        </div>
+        <div class="form-group">
+            <label for="brandId" class="form-label">Brand</label>
+            <InputSelect id="brandId" class="form-input" @bind-Value="bataryModel.BrandId">
+                <option value="">Select a brand</option>
+                @foreach (var brand in brands)
+                {
+                    <option value="@brand.Id">@brand.Name</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => bataryModel.BrandId)" />
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-save">💾 Save</button>
+            <button type="button" class="btn btn-cancel" @onclick="Cancel">Cancel</button>
+        </div>
+    </EditForm>
+}
+</div>
+
+@code {
+    private List<BataryModelDto> bataryModels = new();
+    private BataryModelDto bataryModel = new BataryModelDto();
+    private List<BrandDto> brands = new();
+    private bool isLoading = true;
+    private bool isEditing = false;
+    private bool isAdding = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        bataryModels = (await BataryModelService.GetAllAsync()).ToList();
+        brands = (await BrandService.GetAllAsync()).ToList();
+        isLoading = false;
+    }
+
+    private void AddBataryModel()
+    {
+        bataryModel = new BataryModelDto();
+        isAdding = true;
+        isEditing = false;
+    }
+
+    private async Task EditBataryModel(int id)
+    {
+        bataryModel = await BataryModelService.GetByIdAsync(id);
+        isEditing = true;
+        isAdding = false;
+    }
+
+    private async Task SaveBataryModel()
+    {
+        if (isEditing)
+        {
+            await BataryModelService.UpdateAsync(bataryModel.Id, bataryModel);
+        }
+        else if (isAdding)
+        {
+            await BataryModelService.AddAsync(bataryModel);
+        }
+
+        bataryModels = (await BataryModelService.GetAllAsync()).ToList();
+        isEditing = false;
+        isAdding = false;
+    }
+
+    private async Task DeleteBataryModel(int id)
+    {
+        await BataryModelService.DeleteAsync(id);
+        bataryModels = (await BataryModelService.GetAllAsync()).ToList();
+    }
+
+    private void Cancel()
+    {
+        isEditing = false;
+        isAdding = false;
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/admin/tools");
+    }
+}

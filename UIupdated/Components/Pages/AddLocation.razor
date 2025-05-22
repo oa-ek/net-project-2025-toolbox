@@ -1,0 +1,70 @@
+﻿@page "/add-location"
+@using Core.DTOs
+@using UIinterface.Services
+@inject LocationService LocationService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Add Location</PageTitle>
+
+<div class="page-container">
+    <h3 class="title">Add New Location</h3>
+
+    @if (isLoading)
+    {
+        <p class="loading-text">Loading...</p>
+    }
+    else
+    {
+        <EditForm Model="location" OnValidSubmit="SaveLocation">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label for="name" class="form-label">Name</label>
+                <InputText id="name" @bind-Value="location.Name" class="form-input" />
+            </div>
+
+            <div class="form-group">
+                <label for="description" class="form-label">Description</label>
+                <InputText id="description" @bind-Value="location.Description" class="form-input" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Location</label>
+                <MapComponent Location="location" OnLocationChanged="HandleLocationChanged" />
+            </div>
+
+            <div class="form-actions">
+                <button class="btn btn-save" type="submit">➕ Add</button>
+                <button class="btn btn-cancel" @onclick="Cancel">Cancel</button>
+            </div>
+        </EditForm>
+    }
+</div>
+
+@code {
+    private LocationDto location = new LocationDto
+        {
+            Latitute = 50.327925, // Default latitude
+            Longitute = 26.5119475 // Default longitude
+        };
+    private bool isLoading = false;
+
+    private async Task SaveLocation()
+    {
+        await LocationService.AddAsync(location);
+        Navigation.NavigateTo("/locations", forceLoad: true);
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/locations");
+    }
+
+    private void HandleLocationChanged(LocationDto updatedLocation)
+    {
+        location.Latitute = updatedLocation.Latitute;
+        location.Longitute = updatedLocation.Longitute;
+    }
+}

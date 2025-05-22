@@ -7,11 +7,7 @@
         public string LastName { get; set; }
         public string Email { get; set; }
         public string Phone { get; set; }
-        public string Password { get; set; } // add password property
-
-        public List<BossDto> Bosses { get; set; }
-
-
-
+        public string Password { get; set; }
+        public List<LocationDto> Locations { get; set; } = new List<LocationDto>();
     }
 }
