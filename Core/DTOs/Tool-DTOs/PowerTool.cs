@@ -8,7 +8,7 @@ namespace Core.DTOs
 
         [Required(ErrorMessage = "Tool Type is required.")]
 
-        
+
         public int? ToolTypeId { get; set; }
 
         [Required(ErrorMessage = "Condition is required.")]
@@ -43,6 +43,9 @@ namespace Core.DTOs
         public string? ConditionName { get; set; }
         public string? ToolModelName { get; set; }
         public string? PowerSupplyTypeName { get; set; }
+
+        // Додано властивість для відстеження вибору
+        public bool IsSelected { get; set; }
     }
 }
 

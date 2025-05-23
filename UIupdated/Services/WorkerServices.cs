@@ -164,6 +164,7 @@ namespace UIinterface.Services
             }
         }
 
+        /// Метод для пошуку працівників 
         public async Task<IEnumerable<WorkerDto>> SearchAsync(string searchTerm)
         {
             using (var scope = _serviceScopeFactory.CreateScope())
@@ -188,5 +189,65 @@ namespace UIinterface.Services
                 return workerDtos;
             }
         }
+
+
+        public async Task<WorkerDto?> GetWorkerByEmailAsync(string email)
+        {
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<TTContext>();
+                var worker = await context.Workers
+                    .Include(w => w.Location)
+                    .Include(w => w.Position)
+                    .FirstOrDefaultAsync(w => w.Email == email);
+
+                return _mapper.Map<WorkerDto>(worker);
+            }
+        }
+
+        public async Task<bool> AssignToolsToWorkerAsync(int workerId, List<int> toolIds, string toolType, int locationId)
+        {
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<TTContext>();
+
+                switch (toolType)
+                {
+                    case "PowerTool":
+                        var powerTools = await context.PowerTools.Where(pt => toolIds.Contains(pt.Id)).ToListAsync();
+                        foreach (var tool in powerTools)
+                        {
+                            tool.LastWorkerId = workerId;
+                            tool.LastLocationId = locationId;
+                        }
+                        break;
+
+                    case "HandTool":
+                        var handTools = await context.HandTools.Where(ht => toolIds.Contains(ht.Id)).ToListAsync();
+                        foreach (var tool in handTools)
+                        {
+                            tool.LastWorkerId = workerId;
+                            tool.LastLocationId = locationId;
+                        }
+                        break;
+
+                    case "Batary":
+                        var bataries = await context.Bataries.Where(b => toolIds.Contains(b.Id)).ToListAsync();
+                        foreach (var tool in bataries)
+                        {
+                            tool.LastWorkerId = workerId;
+                            tool.LastLocationId = locationId;
+                        }
+                        break;
+
+                    default:
+                        throw new ArgumentException("Invalid tool type.");
+                }
+
+                await context.SaveChangesAsync();
+                return true;
+            }
+        }
+
     }
 }

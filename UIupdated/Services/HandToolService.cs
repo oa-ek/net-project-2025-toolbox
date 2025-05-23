@@ -107,6 +107,49 @@ namespace UIinterface.Services
                 return _mapper.Map<HandToolDto>(handTool);
             }
         }
+
+        public async Task<List<HandToolDto>> GetToolsAsync(string searchTerm, string sortColumn, bool sortAscending)
+        {
+            var query = _repository.Context.HandTools
+                .Include(ht => ht.ToolType)
+                .Include(ht => ht.Condition)
+                .Include(ht => ht.Brand)
+                .AsQueryable();
+
+            // Фільтрація
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(ht =>
+                    ht.ToolType.Name.Contains(searchTerm) ||
+                    ht.Brand.Name.Contains(searchTerm) ||
+                    ht.Condition.Name.Contains(searchTerm));
+            }
+
+            // Сортування
+            query = sortColumn switch
+            {
+                "Name" => sortAscending ? query.OrderBy(ht => ht.ToolType.Name) : query.OrderByDescending(ht => ht.ToolType.Name),
+                "Brand" => sortAscending ? query.OrderBy(ht => ht.Brand.Name) : query.OrderByDescending(ht => ht.Brand.Name),
+                "Condition" => sortAscending ? query.OrderBy(ht => ht.Condition.Name) : query.OrderByDescending(ht => ht.Condition.Name),
+                _ => query.OrderBy(ht => ht.Id)
+            };
+
+            // Отримання даних
+            var tools = await query.ToListAsync();
+
+            // Мапінг у DTO
+            return tools.Select(ht => new HandToolDto
+            {
+                Id = ht.Id,
+                Name = ht.ToolType.Name,
+                BrandId = ht.Brand.Id,
+                ConditionId = ht.Condition.Id,
+                ToolTypeId = ht.ToolType.Id,
+                Price = ht.Price
+            }).ToList();
+        }
+
+
     }
 }
 

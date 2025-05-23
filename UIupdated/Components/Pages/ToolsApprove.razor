@@ -1,0 +1,326 @@
+﻿@page "/tools-management"
+@using Core.DTOs
+@using UIinterface.Services
+@inject PowerToolService PowerToolService
+@inject HandToolService HandToolService
+@inject BataryService BataryService
+@inject WorkerService WorkerService
+@inject LocationService LocationService
+@inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@rendermode InteractiveServer
+
+<h3>Tool Management</h3>
+
+<!-- Вибір типу інструменту -->
+<div class="mb-3">
+    <label for="toolTypeSelect">Select Tool Type:</label>
+    <select id="toolTypeSelect" class="form-select" @onchange="OnToolTypeChanged">
+        <option value="PowerTool">Power Tool</option>
+        <option value="HandTool">Hand Tool</option>
+        <option value="Batary">Batary</option>
+    </select>
+</div>
+
+<!-- Пошук -->
+<div class="mb-3">
+    <input type="text" @bind="searchTerm" @bind:event="oninput" placeholder="Search tools..." class="form-control" />
+</div>
+
+<!-- Таблиця інструментів -->
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                <input type="checkbox" @onclick="ToggleSelectAll" />
+            </th>
+            <th>Name</th>
+            <th>Serial Number</th>
+            <th>Condition</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (selectedToolType == "PowerTool" && powerTools != null)
+        {
+            @foreach (var tool in powerTools)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" @bind="tool.IsSelected" />
+                    </td>
+                    <td>@tool.ToolTypeName</td>
+                    <td>@tool.SerialNumber</td>
+                    <td>@tool.ConditionName</td>
+                </tr>
+            }
+        }
+        else if (selectedToolType == "HandTool" && handTools != null)
+        {
+            @foreach (var tool in handTools)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" @bind="tool.IsSelected" />
+                    </td>
+                    <td>@tool.Name</td>
+                    <td>N/A</td>
+                    <td>N/A</td>
+                </tr>
+            }
+        }
+        else if (selectedToolType == "Batary" && bataries != null)
+        {
+            @foreach (var tool in bataries)
+            {
+                <tr>
+                    <td>
+                        <input type="checkbox" @bind="tool.IsSelected" />
+                    </td>
+                    <td>@tool.BataryModelName</td>
+                    <td>@tool.SerialNumber</td>
+                    <td>@tool.ConditionName</td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr><td colspan="4">Loading...</td></tr>
+        }
+    </tbody>
+</table>
+
+<!-- Кнопка призначення інструментів -->
+<div class="mt-3">
+    <button class="btn btn-primary" @onclick="OpenAssignModal">Assign Selected Tools</button>
+</div>
+
+<!-- Модальне вікно для підтвердження призначення інструментів -->
+@if (isAssignModalOpen)
+{
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Підтвердження отримання інструментів</h5>
+                    <button type="button" class="btn-close" @onclick="CloseAssignModal"></button>
+                </div>
+                <div class="modal-body">
+                    @if (currentWorker != null)
+                    {
+                        <p>
+                            Ви, <b>@currentWorker.FirstName @currentWorker.LastName</b> (<b>@currentWorker.Email</b>), справді хочете взяти ці інструменти:
+                        </p>
+                        <ul>
+                            @foreach (var toolName in GetSelectedToolNames())
+                            {
+                                <li>@toolName</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-danger">Не вдалося знайти ваш профіль працівника. Зверніться до адміністратора.</p>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseAssignModal">Скасувати</button>
+                    <button type="button" class="btn btn-primary" @onclick="ConfirmAssignment" disabled="@(currentWorker == null)">Так</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Модальне вікно для вибору локації -->
+@if (isLocationModalOpen)
+{
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Select Location</h5>
+                    <button type="button" class="btn-close" @onclick="CloseLocationModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Search for a location:</p>
+                    <input type="text" @bind="locationSearchTerm" class="form-control" placeholder="Search Location" />
+                    <ul class="list-group mt-3">
+                        @foreach (var location in locations)
+                        {
+                            <li class="list-group-item" @onclick="() => SelectLocation(location.Id)">
+                                <strong>@location.Name</strong> - @location.Description
+                            </li>
+                        }
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseLocationModal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private string selectedToolType = "PowerTool";
+    private List<PowerToolDto> powerTools;
+    private List<HandToolDto> handTools;
+    private List<BataryDto> bataries;
+    private List<LocationDto> locations;
+    private string searchTerm = string.Empty;
+    private string locationSearchTerm = string.Empty;
+    private bool isAssignModalOpen = false;
+    private bool isLocationModalOpen = false;
+    private int selectedLocationId;
+
+    private WorkerDto currentWorker;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrentWorkerAsync();
+        await LoadToolsAsync();
+        await LoadLocationsAsync();
+    }
+
+    private async Task LoadCurrentWorkerAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var email = user.Identity?.Name;
+
+        if (!string.IsNullOrEmpty(email))
+        {
+            currentWorker = await WorkerService.GetWorkerByEmailAsync(email);
+        }
+    }
+
+    private async Task OnToolTypeChanged(ChangeEventArgs e)
+    {
+        selectedToolType = e.Value?.ToString();
+        await LoadToolsAsync();
+        StateHasChanged();
+    }
+
+    private async Task LoadToolsAsync()
+    {
+        switch (selectedToolType)
+        {
+            case "PowerTool":
+                powerTools = await PowerToolService.GetToolsAsync(searchTerm, "ToolTypeName", true);
+                handTools = null;
+                bataries = null;
+                break;
+            case "HandTool":
+                handTools = await HandToolService.GetToolsAsync(searchTerm, "Name", true);
+                powerTools = null;
+                bataries = null;
+                break;
+            case "Batary":
+                bataries = await BataryService.GetToolsAsync(searchTerm, "BataryModelName", true);
+                powerTools = null;
+                handTools = null;
+                break;
+        }
+    }
+
+    private async Task LoadLocationsAsync()
+    {
+        locations = (await LocationService.GetAllAsync()).ToList();
+    }
+
+    private void ToggleSelectAll()
+    {
+        if (selectedToolType == "PowerTool" && powerTools != null)
+        {
+            var selectAll = powerTools.All(t => t.IsSelected);
+            foreach (var tool in powerTools)
+            {
+                tool.IsSelected = !selectAll;
+            }
+        }
+        else if (selectedToolType == "HandTool" && handTools != null)
+        {
+            var selectAll = handTools.All(t => t.IsSelected);
+            foreach (var tool in handTools)
+            {
+                tool.IsSelected = !selectAll;
+            }
+        }
+        else if (selectedToolType == "Batary" && bataries != null)
+        {
+            var selectAll = bataries.All(t => t.IsSelected);
+            foreach (var tool in bataries)
+            {
+                tool.IsSelected = !selectAll;
+            }
+        }
+    }
+
+    private void OpenAssignModal()
+    {
+        isAssignModalOpen = true;
+    }
+
+    private void CloseAssignModal()
+    {
+        isAssignModalOpen = false;
+    }
+
+    private async Task ConfirmAssignment()
+    {
+        var selectedTools = selectedToolType switch
+        {
+            "PowerTool" => powerTools?.Where(t => t.IsSelected).Select(t => t.Id).ToList(),
+            "HandTool" => handTools?.Where(t => t.IsSelected).Select(t => t.Id).ToList(),
+            "Batary" => bataries?.Where(t => t.IsSelected).Select(t => t.Id).ToList(),
+            _ => null
+        };
+
+        if (selectedTools != null && selectedTools.Any() && currentWorker != null)
+        {
+            var success = await WorkerService.AssignToolsToWorkerAsync(currentWorker.Id, selectedTools, selectedToolType, selectedLocationId);
+            if (success)
+            {
+                Console.WriteLine($"Assigned tools to {currentWorker.Email} at location {selectedLocationId}.");
+                CloseAssignModal();
+                await LoadToolsAsync();
+            }
+        }
+    }
+
+    private void OpenLocationModal()
+    {
+        isLocationModalOpen = true;
+    }
+
+    private void CloseLocationModal()
+    {
+        isLocationModalOpen = false;
+    }
+
+    private async Task SelectLocation(int locationId)
+    {
+        var location = await LocationService.GetLocationByIdAsync(locationId);
+        if (location != null)
+        {
+            selectedLocationId = location.Id;
+            Console.WriteLine($"Selected Location: {location.Name}");
+            CloseLocationModal();
+        }
+        else
+        {
+            Console.WriteLine("Location not found.");
+        }
+    }
+
+    private IEnumerable<string> GetSelectedToolNames()
+    {
+        return selectedToolType switch
+        {
+            "PowerTool" => powerTools?.Where(t => t.IsSelected).Select(t => t.ToolTypeName) ?? Enumerable.Empty<string>(),
+            "HandTool" => handTools?.Where(t => t.IsSelected).Select(t => t.Name) ?? Enumerable.Empty<string>(),
+            "Batary" => bataries?.Where(t => t.IsSelected).Select(t => t.BataryModelName) ?? Enumerable.Empty<string>(),
+            _ => Enumerable.Empty<string>()
+        };
+    }
+}

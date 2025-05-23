@@ -189,5 +189,103 @@ namespace UIinterface.Services
                 return _mapper.Map<PowerToolDto>(powerTool);
             }
         }
+
+        public async Task<PaginatedResult<PowerToolDto>> SearchToolsAsync(string searchTerm, string sortColumn, bool sortAscending, int pageNumber, int pageSize)
+        {
+            IQueryable<PowerTool> query = _repository.Context.PowerTools
+                .Include(pt => pt.ToolType)
+                .Include(pt => pt.ToolModel);
+
+            // Filtering
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(pt =>
+                    pt.ToolType.Name.Contains(searchTerm) ||
+                    pt.ToolModel.Name.Contains(searchTerm) ||
+                    pt.SerialNumber.Contains(searchTerm));
+            }
+
+            // Sorting
+            query = sortColumn switch
+            {
+                "Type" => sortAscending
+                    ? query.OrderBy(pt => pt.ToolType.Name)
+                    : query.OrderByDescending(pt => pt.ToolType.Name),
+                "Model" => sortAscending
+                    ? query.OrderBy(pt => pt.ToolModel.Name)
+                    : query.OrderByDescending(pt => pt.ToolModel.Name),
+                "SerialNumber" => sortAscending
+                    ? query.OrderBy(pt => pt.SerialNumber)
+                    : query.OrderByDescending(pt => pt.SerialNumber),
+                _ => query.OrderBy(pt => pt.Id)
+            };
+
+            // Pagination
+            int totalItems = await query.CountAsync();
+            var items = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            // Map to DTO
+            var resultItems = _mapper.Map<List<PowerToolDto>>(items);
+
+            return new PaginatedResult<PowerToolDto>
+            {
+                Items = resultItems,
+                TotalItems = totalItems,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+        }
+
+        public async Task<List<PowerToolDto>> GetToolsAsync(string searchTerm, string sortColumn, bool sortAscending)
+        {
+            var query = _repository.Context.PowerTools
+                .Include(pt => pt.ToolType)
+                .Include(pt => pt.Condition)
+                .Include(pt => pt.ToolModel)
+                .Include(pt => pt.PowerSupplyType)
+                .AsQueryable();
+
+            // Фільтрація
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(pt =>
+                    pt.ToolType.Name.Contains(searchTerm) ||
+                    pt.ToolModel.Name.Contains(searchTerm) ||
+                    pt.Condition.Name.Contains(searchTerm) ||
+                    pt.SerialNumber.Contains(searchTerm));
+            }
+
+            // Сортування
+            query = sortColumn switch
+            {
+                "Name" => sortAscending ? query.OrderBy(pt => pt.ToolType.Name) : query.OrderByDescending(pt => pt.ToolType.Name),
+                "Model" => sortAscending ? query.OrderBy(pt => pt.ToolModel.Name) : query.OrderByDescending(pt => pt.ToolModel.Name),
+                "Condition" => sortAscending ? query.OrderBy(pt => pt.Condition.Name) : query.OrderByDescending(pt => pt.Condition.Name),
+                _ => query.OrderBy(pt => pt.Id)
+            };
+
+            // Отримання даних
+            var tools = await query.ToListAsync();
+
+            // Мапінг у DTO
+            return tools.Select(pt => new PowerToolDto
+            {
+                Id = pt.Id,
+                ToolTypeId = pt.ToolType.Id,
+                ToolTypeName = pt.ToolType.Name,
+                ConditionId = pt.Condition.Id,
+                ConditionName = pt.Condition.Name,
+                ToolModelId = pt.ToolModel.Id,
+                ToolModelName = pt.ToolModel.Name,
+                PowerSupplyTypeId = pt.PowerSupplyType.Id,
+                PowerSupplyTypeName = pt.PowerSupplyType.Name,
+                SerialNumber = pt.SerialNumber,
+                Number = pt.Number,
+                Price = pt.Price,
+                HasCase = pt.HasCase,
+                DateMade = pt.DateMade
+            }).ToList();
+        }
+
     }
 }

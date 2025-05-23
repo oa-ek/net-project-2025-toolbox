@@ -113,6 +113,15 @@ namespace UIinterface.Services
             }
         }
 
+        //additional method to get location by id
+        public async Task<LocationDto?> GetLocationByIdAsync(int locationId)
+        {
+            var location = await _locationRepository.Context.Locations
+                .Include(l => l.Workers)
+                .FirstOrDefaultAsync(l => l.Id == locationId);
+
+            return _mapper.Map<LocationDto>(location);
+        }
 
     }
 }
