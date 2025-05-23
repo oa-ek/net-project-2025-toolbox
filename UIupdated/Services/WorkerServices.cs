@@ -11,6 +11,16 @@ namespace UIinterface.Services
         private readonly ILogger<WorkerService> _logger;
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
+        public async Task<List<string>> GetUsedEmailsAsync()
+        {
+            var all = await GetAllAsync();
+            return all
+                .Select(w => w.Email)
+                .Where(e => !string.IsNullOrWhiteSpace(e))
+                .ToList();
+        }
+
+
         public WorkerService(RepositoryContainer repositoryContainer, IMapper mapper, ILogger<WorkerService> logger, IServiceScopeFactory serviceScopeFactory)
             : base(repositoryContainer.WorkerRepository, mapper)
         {

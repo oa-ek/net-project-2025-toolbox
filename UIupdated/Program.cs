@@ -8,7 +8,9 @@ using Core;
 using Core.Mappings;
 using Core.DTOs;
 using Repository;
-using UIinterface.Services; // [ÄÎÄÀÍÎ]
+using UIinterface.Services;
+using UIupdated.Services; // [ÄÎÄÀÍÎ]
+
 
 namespace UIupdated
 {
@@ -113,6 +115,9 @@ namespace UIupdated
             builder.Services.AddScoped<ToolModelService>();
             builder.Services.AddScoped<ToolTypeService>();
 
+            builder.Services.AddScoped<IUserService, UserService>(); // testing connect user and workers emails
+
+
             // [ÄÎÄÀÍÎ] Ğåïîçèòîğ³¿
             builder.Services.AddScoped<BaseRepository<Brand>>();
             builder.Services.AddScoped<BaseRepository<Batary>>();
@@ -130,6 +135,8 @@ namespace UIupdated
             builder.Services.AddScoped<BaseRepository<Worker>>();
             builder.Services.AddScoped<RepositoryContainer>();
 
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
 
@@ -137,6 +144,8 @@ namespace UIupdated
             if (app.Environment.IsDevelopment())
             {
                 app.UseMigrationsEndPoint();
+                app.UseSwagger();
+                app.UseSwaggerUI();
             }
             else
             {
