@@ -118,6 +118,7 @@ namespace UIupdated
             builder.Services.AddScoped<IUserService, UserService>(); // testing connect user and workers emails
 
 
+
             // [ДОДАНО] Репозиторії
             builder.Services.AddScoped<BaseRepository<Brand>>();
             builder.Services.AddScoped<BaseRepository<Batary>>();

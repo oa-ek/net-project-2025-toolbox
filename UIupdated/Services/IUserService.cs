@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using UIupdated.Data;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
 namespace UIupdated.Services
 {
@@ -10,24 +11,66 @@ namespace UIupdated.Services
         Task<IEnumerable<UserDto>> GetAllUsersAsync();
         Task<UserDto?> GetUserByEmailAsync(string email);
         Task<bool> AssignRoleAsync(string userId, string roleName);
+        Task<bool> RemoveRoleAsync(string userId, string roleName);
+        Task<bool> RemoveRoleByIdAsync(string userId, string roleId);
+        Task<IdentityRole?> GetRoleByNameAsync(string roleName);
     }
+
+
 
     public class UserService : IUserService
     {
+
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly ILogger<UserService> _logger;
+        private readonly ApplicationDbContext _dbContext;
 
         public UserService(
             UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
-            ILogger<UserService> logger)
+            ILogger<UserService> logger,
+            ApplicationDbContext dbContext)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _logger = logger;
+            _dbContext = dbContext;
         }
 
+
+        public async Task<bool> RemoveRoleByIdAsync(string userId, string roleId)
+        {
+            _logger.LogInformation("\n\n Trying to remove role {RoleId} from user {UserId} \n\n", roleId, userId);
+
+            var userRole = await _dbContext.UserRoles
+                .FirstOrDefaultAsync(ur => ur.UserId == userId && ur.RoleId == roleId);
+
+            if (userRole == null)
+                return false;
+
+            _dbContext.UserRoles.Remove(userRole);
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+
+        public async Task<IdentityRole?> GetRoleByNameAsync(string roleName)
+        {
+            return await _roleManager.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
+        }
+
+        public async Task<bool> RemoveRoleAsync(string userId, string roleName)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return false;
+            if (await _userManager.IsInRoleAsync(user, roleName))
+            {
+                var result = await _userManager.RemoveFromRoleAsync(user, roleName);
+                return result.Succeeded;
+            }
+            return true;
+        }
         public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
         {
             var users = _userManager.Users.ToList();
@@ -43,7 +86,8 @@ namespace UIupdated.Services
                     UserName = user.UserName,
                     Email = user.Email,
                     EmailConfirmed = user.EmailConfirmed,
-                    IsWorker = roles.Contains("Worker")
+                    IsWorker = roles.Contains("Worker"),
+                    Roles = roles.ToList()
                 });
             }
             return userDtos;

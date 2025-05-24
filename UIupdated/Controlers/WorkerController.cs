@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using UIupdated.Services;
 using UIinterface.Services;
+using Microsoft.EntityFrameworkCore;
+using UIupdated.Data;
 
 namespace UIinterface.Controlers
 {
@@ -13,6 +15,7 @@ namespace UIinterface.Controlers
         private readonly IBaseService<WorkerDto> _workerService;
         private readonly IUserService _userService;
         private readonly ILogger<WorkerController> _logger;
+        private readonly ApplicationDbContext _dbContext;
 
         public WorkerController(
             IBaseService<WorkerDto> workerService,
@@ -77,10 +80,26 @@ namespace UIinterface.Controlers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
+            var worker = await _workerService.GetByIdAsync(id);
+            if (worker == null) return NotFound();
+
+            var user = await _userService.GetUserByEmailAsync(worker.Email);
+            if (user != null)
+            {
+                // Отримати Id ролі Worker
+                var workerRole = await _dbContext.Roles.FirstOrDefaultAsync(r => r.Name == "Worker");
+                if (workerRole != null)
+                {
+                    await _userService.RemoveRoleByIdAsync(user.Id, workerRole.Id);
+                }
+            }
+
             var deleted = await _workerService.DeleteAsync(id);
             if (!deleted) return NotFound();
             return NoContent();
         }
+
+
 
         [HttpPost("assign-test")]
         public async Task<IActionResult> TestAssign([FromBody] string email)

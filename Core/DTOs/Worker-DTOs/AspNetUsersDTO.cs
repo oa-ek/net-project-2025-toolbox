@@ -14,6 +14,7 @@ namespace Core.DTOs
             public string UserName { get; set; }         // Логін
             public string Email { get; set; }            // Електронна пошта
             public bool EmailConfirmed { get; set; }     // Чи підтверджена пошта
-            public bool IsWorker { get; set; }           // Чи має роль "Worker" (не з таблиці напряму, а обчислюється)
-        }
+        public bool IsWorker { get; set; }           // Чи має роль "Worker" (не з таблиці напряму, а обчислюється)
+        public List<string> Roles { get; set; } = new(); // ДОДАЙТЕ ЦЕ
+    }
 }
