@@ -5,6 +5,11 @@
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin,Boss")]
+
+
+
 <PageTitle>Brands</PageTitle>
 
 <div class="page-container">

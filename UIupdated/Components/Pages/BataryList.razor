@@ -9,6 +9,11 @@
 
 <PageTitle>Batteries</PageTitle>
 
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin,Boss")]
+
+
+
 <div class="page-container">
     <h3 class="title">Batteries</h3>
 

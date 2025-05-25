@@ -13,7 +13,9 @@
 
         <AuthorizeView>
             <Authorized>
-                <NavLink class="nav-link text-white" href="admin">Admin Panel</NavLink>
+                <AuthorizeView Roles="Admin,Boss" Context="roleContext">
+                    <NavLink class="nav-link text-white" href="admin">Admin Panel</NavLink>
+                </AuthorizeView>
                 <NavLink class="nav-link text-white" href="Account/Manage">@context.User.Identity?.Name</NavLink>
                 <form action="Account/Logout" method="post" class="d-inline">
                     <AntiforgeryToken />

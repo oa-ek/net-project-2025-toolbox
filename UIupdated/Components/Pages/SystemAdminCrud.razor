@@ -8,6 +8,11 @@
 @inject IUserService UserService
 @rendermode InteractiveServer
 
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Boss")]
+
+
+
 <PageTitle>System Admins</PageTitle>
 
 <div class="page-container">

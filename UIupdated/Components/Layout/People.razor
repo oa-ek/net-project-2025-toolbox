@@ -3,11 +3,16 @@
 @inject NavigationManager Navigation
 
 
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin,Boss")]
+
+
 <div class="admin-panel">
     <h1 class="admin-title-crud">Admin Panel</h1>
 
     <div class="image-gallery-crud">
-
+        <AuthorizeView Roles="Boss" Context="roleContext">
+        
         <div class="image-item-crud" @onclick="NavigateToBoss">
             <img src="Photos/Boss.png" alt="Other" class="gallery-image" />
             <p class="image-caption-crud">Bosses</p>
@@ -16,6 +21,7 @@
             <img src="Photos/admin.png" alt="Other" class="gallery-image" />
             <p class="image-caption-crud">System Admins</p>
         </div>
+        </AuthorizeView>
         <div class="image-item-crud" @onclick="NavigateToWorkersList">
             <img src="Photos/worker.png" alt="Other" class="gallery-image" />
             <p class="image-caption-crud">Workers</p>

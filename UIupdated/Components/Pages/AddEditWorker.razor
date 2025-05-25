@@ -15,6 +15,10 @@
 
 <PageTitle>Add/Edit Worker</PageTitle>
 
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin,Boss")]
+
+
 <div class="page-container">
     <h3 class="title">@(isEditing ? "Edit Worker" : "Add Worker")</h3>
 

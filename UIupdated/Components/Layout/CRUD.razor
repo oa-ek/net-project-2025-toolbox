@@ -2,13 +2,23 @@
 @rendermode InteractiveServer
 @inject NavigationManager Navigation
 
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin,Boss")]
+
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sunflower:wght@300&display=swap" rel="stylesheet">
 
 <PageTitle>Anmin panel</PageTitle>
 
-@*<div class="admin-panel">
+@*
+   <AuthorizeView Roles="Admin,Boss" Context="roleContext">
+                </AuthorizeView> 
+
+
+
+<div class="admin-panel">
     <h1 class="admin-title">Admin Panel</h1>
 
     <div class="admin-buttons">
