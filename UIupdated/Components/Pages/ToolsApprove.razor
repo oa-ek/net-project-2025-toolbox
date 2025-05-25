@@ -8,6 +8,7 @@
 @inject LocationService LocationService
 @inject IJSRuntime JSRuntime
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
 @rendermode InteractiveServer
 
 <h3>Tool Management</h3>
@@ -40,9 +41,9 @@
         </tr>
     </thead>
     <tbody>
-        @if (selectedToolType == "PowerTool" && powerTools != null)
+        @if (selectedToolType == "PowerTool")
         {
-            @foreach (var tool in powerTools)
+            @foreach (var tool in filteredPowerTools)
             {
                 <tr>
                     <td>
@@ -54,9 +55,9 @@
                 </tr>
             }
         }
-        else if (selectedToolType == "HandTool" && handTools != null)
+        else if (selectedToolType == "HandTool")
         {
-            @foreach (var tool in handTools)
+            @foreach (var tool in filteredHandTools)
             {
                 <tr>
                     <td>
@@ -68,9 +69,9 @@
                 </tr>
             }
         }
-        else if (selectedToolType == "Batary" && bataries != null)
+        else if (selectedToolType == "Batary")
         {
-            @foreach (var tool in bataries)
+            @foreach (var tool in filteredBataries)
             {
                 <tr>
                     <td>
@@ -94,6 +95,14 @@
     <button class="btn btn-primary" @onclick="OpenAssignModal">Assign Selected Tools</button>
 </div>
 
+<!-- Кнопка підтвердження локації (з'являється після підтвердження інструментів) -->
+@if (isLocationConfirmButtonVisible)
+{
+    <div class="mt-3">
+        <button class="btn btn-success" @onclick="GoToLocationsMap">Підтвердити локацію</button>
+    </div>
+}
+
 <!-- Модальне вікно для підтвердження призначення інструментів -->
 @if (isAssignModalOpen)
 {
@@ -111,9 +120,9 @@
                             Ви, <b>@currentWorker.FirstName @currentWorker.LastName</b> (<b>@currentWorker.Email</b>), справді хочете взяти ці інструменти:
                         </p>
                         <ul>
-                            @foreach (var toolName in GetSelectedToolNames())
+                            @foreach (var tool in GetAllSelectedTools())
                             {
-                                <li>@toolName</li>
+                                <li>@tool.Type: @tool.Name</li>
                             }
                         </ul>
                     }
@@ -147,7 +156,8 @@
                     <ul class="list-group mt-3">
                         @foreach (var location in locations)
                         {
-                            <li class="list-group-item" @onclick="() => SelectLocation(location.Id)">
+                            <li class="list-group-item @(selectedLocationId == location.Id ? "active" : "")"
+                                @onclick="() => SelectLocation(location.Id)">
                                 <strong>@location.Name</strong> - @location.Description
                             </li>
                         }
@@ -155,6 +165,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" @onclick="CloseLocationModal">Cancel</button>
+                    <button type="button" class="btn btn-primary" @onclick="ConfirmLocation" disabled="@(selectedLocationId == 0)">Підтвердити локацію</button>
                 </div>
             </div>
         </div>
@@ -163,23 +174,30 @@
 
 @code {
     private string selectedToolType = "PowerTool";
-    private List<PowerToolDto> powerTools;
-    private List<HandToolDto> handTools;
-    private List<BataryDto> bataries;
+    private List<PowerToolDto> allPowerTools = new();
+    private List<HandToolDto> allHandTools = new();
+    private List<BataryDto> allBataries = new();
+
+    private List<PowerToolDto> filteredPowerTools = new();
+    private List<HandToolDto> filteredHandTools = new();
+    private List<BataryDto> filteredBataries = new();
+
     private List<LocationDto> locations;
     private string searchTerm = string.Empty;
     private string locationSearchTerm = string.Empty;
     private bool isAssignModalOpen = false;
     private bool isLocationModalOpen = false;
     private int selectedLocationId;
+    private bool isLocationConfirmButtonVisible = false;
 
     private WorkerDto currentWorker;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadCurrentWorkerAsync();
-        await LoadToolsAsync();
+        await LoadAllToolsAsync();
         await LoadLocationsAsync();
+        FilterTools();
     }
 
     private async Task LoadCurrentWorkerAsync()
@@ -194,33 +212,11 @@
         }
     }
 
-    private async Task OnToolTypeChanged(ChangeEventArgs e)
+    private async Task LoadAllToolsAsync()
     {
-        selectedToolType = e.Value?.ToString();
-        await LoadToolsAsync();
-        StateHasChanged();
-    }
-
-    private async Task LoadToolsAsync()
-    {
-        switch (selectedToolType)
-        {
-            case "PowerTool":
-                powerTools = await PowerToolService.GetToolsAsync(searchTerm, "ToolTypeName", true);
-                handTools = null;
-                bataries = null;
-                break;
-            case "HandTool":
-                handTools = await HandToolService.GetToolsAsync(searchTerm, "Name", true);
-                powerTools = null;
-                bataries = null;
-                break;
-            case "Batary":
-                bataries = await BataryService.GetToolsAsync(searchTerm, "BataryModelName", true);
-                powerTools = null;
-                handTools = null;
-                break;
-        }
+        allPowerTools = (await PowerToolService.GetAllAsync()).ToList();
+        allHandTools = (await HandToolService.GetAllAsync()).ToList();
+        allBataries = (await BataryService.GetAllAsync()).ToList();
     }
 
     private async Task LoadLocationsAsync()
@@ -228,28 +224,67 @@
         locations = (await LocationService.GetAllAsync()).ToList();
     }
 
+    private void OnToolTypeChanged(ChangeEventArgs e)
+    {
+        selectedToolType = e.Value?.ToString();
+        FilterTools();
+    }
+
+    private void FilterTools()
+    {
+        if (selectedToolType == "PowerTool")
+        {
+            filteredPowerTools = string.IsNullOrWhiteSpace(searchTerm)
+                ? allPowerTools
+                : allPowerTools.Where(t =>
+                    (t.ToolTypeName ?? "").Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    (t.SerialNumber ?? "").Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    (t.ConditionName ?? "").Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+                ).ToList();
+        }
+        else if (selectedToolType == "HandTool")
+        {
+            filteredHandTools = string.IsNullOrWhiteSpace(searchTerm)
+                ? allHandTools
+                : allHandTools.Where(t =>
+                    (t.Name ?? "").Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+                ).ToList();
+        }
+        else if (selectedToolType == "Batary")
+        {
+            filteredBataries = string.IsNullOrWhiteSpace(searchTerm)
+                ? allBataries
+                : allBataries.Where(b =>
+                    (b.BataryModelName ?? "").Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    (b.SerialNumber ?? "").Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    (b.ConditionName ?? "").Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+                ).ToList();
+        }
+        StateHasChanged();
+    }
+
     private void ToggleSelectAll()
     {
-        if (selectedToolType == "PowerTool" && powerTools != null)
+        if (selectedToolType == "PowerTool")
         {
-            var selectAll = powerTools.All(t => t.IsSelected);
-            foreach (var tool in powerTools)
+            var selectAll = filteredPowerTools.All(t => t.IsSelected);
+            foreach (var tool in filteredPowerTools)
             {
                 tool.IsSelected = !selectAll;
             }
         }
-        else if (selectedToolType == "HandTool" && handTools != null)
+        else if (selectedToolType == "HandTool")
         {
-            var selectAll = handTools.All(t => t.IsSelected);
-            foreach (var tool in handTools)
+            var selectAll = filteredHandTools.All(t => t.IsSelected);
+            foreach (var tool in filteredHandTools)
             {
                 tool.IsSelected = !selectAll;
             }
         }
-        else if (selectedToolType == "Batary" && bataries != null)
+        else if (selectedToolType == "Batary")
         {
-            var selectAll = bataries.All(t => t.IsSelected);
-            foreach (var tool in bataries)
+            var selectAll = filteredBataries.All(t => t.IsSelected);
+            foreach (var tool in filteredBataries)
             {
                 tool.IsSelected = !selectAll;
             }
@@ -268,23 +303,24 @@
 
     private async Task ConfirmAssignment()
     {
-        var selectedTools = selectedToolType switch
-        {
-            "PowerTool" => powerTools?.Where(t => t.IsSelected).Select(t => t.Id).ToList(),
-            "HandTool" => handTools?.Where(t => t.IsSelected).Select(t => t.Id).ToList(),
-            "Batary" => bataries?.Where(t => t.IsSelected).Select(t => t.Id).ToList(),
-            _ => null
-        };
+        var selectedPowerToolIds = filteredPowerTools?.Where(t => t.IsSelected).Select(t => t.Id).ToList() ?? new List<int>();
+        var selectedHandToolIds = filteredHandTools?.Where(t => t.IsSelected).Select(t => t.Id).ToList() ?? new List<int>();
+        var selectedBataryIds = filteredBataries?.Where(t => t.IsSelected).Select(t => t.Id).ToList() ?? new List<int>();
 
-        if (selectedTools != null && selectedTools.Any() && currentWorker != null)
+        if (currentWorker != null && (selectedPowerToolIds.Any() || selectedHandToolIds.Any() || selectedBataryIds.Any()))
         {
-            var success = await WorkerService.AssignToolsToWorkerAsync(currentWorker.Id, selectedTools, selectedToolType, selectedLocationId);
-            if (success)
-            {
-                Console.WriteLine($"Assigned tools to {currentWorker.Email} at location {selectedLocationId}.");
-                CloseAssignModal();
-                await LoadToolsAsync();
-            }
+            if (selectedPowerToolIds.Any())
+                await WorkerService.AssignToolsToWorkerAsync(currentWorker.Id, selectedPowerToolIds, "PowerTool", selectedLocationId);
+            if (selectedHandToolIds.Any())
+                await WorkerService.AssignToolsToWorkerAsync(currentWorker.Id, selectedHandToolIds, "HandTool", selectedLocationId);
+            if (selectedBataryIds.Any())
+                await WorkerService.AssignToolsToWorkerAsync(currentWorker.Id, selectedBataryIds, "Batary", selectedLocationId);
+
+            CloseAssignModal();
+            await LoadAllToolsAsync();
+            FilterTools();
+            isLocationConfirmButtonVisible = true;
+            StateHasChanged();
         }
     }
 
@@ -300,27 +336,37 @@
 
     private async Task SelectLocation(int locationId)
     {
-        var location = await LocationService.GetLocationByIdAsync(locationId);
+        var location = locations.FirstOrDefault(l => l.Id == locationId);
         if (location != null)
         {
             selectedLocationId = location.Id;
-            Console.WriteLine($"Selected Location: {location.Name}");
             CloseLocationModal();
-        }
-        else
-        {
-            Console.WriteLine("Location not found.");
         }
     }
 
-    private IEnumerable<string> GetSelectedToolNames()
+    private void GoToLocationsMap()
     {
-        return selectedToolType switch
-        {
-            "PowerTool" => powerTools?.Where(t => t.IsSelected).Select(t => t.ToolTypeName) ?? Enumerable.Empty<string>(),
-            "HandTool" => handTools?.Where(t => t.IsSelected).Select(t => t.Name) ?? Enumerable.Empty<string>(),
-            "Batary" => bataries?.Where(t => t.IsSelected).Select(t => t.BataryModelName) ?? Enumerable.Empty<string>(),
-            _ => Enumerable.Empty<string>()
-        };
+        Navigation.NavigateTo("/locations-map");
+    }
+
+    private IEnumerable<(string Type, int Id, string Name)> GetAllSelectedTools()
+    {
+        foreach (var t in filteredPowerTools?.Where(t => t.IsSelected) ?? Enumerable.Empty<PowerToolDto>())
+            yield return ("PowerTool", t.Id, t.ToolTypeName);
+        foreach (var t in filteredHandTools?.Where(t => t.IsSelected) ?? Enumerable.Empty<HandToolDto>())
+            yield return ("HandTool", t.Id, t.Name);
+        foreach (var t in filteredBataries?.Where(t => t.IsSelected) ?? Enumerable.Empty<BataryDto>())
+            yield return ("Batary", t.Id, t.BataryModelName);
+    }
+
+    private void ConfirmLocation()
+    {
+        CloseLocationModal();
+    }
+
+    private void OnSearchChanged(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? "";
+        FilterTools();
     }
 }

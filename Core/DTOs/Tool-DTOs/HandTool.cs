@@ -11,6 +11,9 @@
 
         // Додано для відстеження вибору
         public bool IsSelected { get; set; } = false;
+        // Додайте ці властивості:
+        public int? LastWorkerId { get; set; }
+        public int LastLocationId { get; set; }
 
     }
 }

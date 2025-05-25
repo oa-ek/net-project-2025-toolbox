@@ -287,5 +287,56 @@ namespace UIinterface.Services
             }).ToList();
         }
 
+        public async Task<List<PowerToolDto>> GetToolsByLocationAsync(int locationId)
+        {
+            var all = await GetAllAsync();
+            return all.Where(t => t.LastLocationId == locationId).ToList();
+        }
+
+
+        // Пошук по всіх PowerTool за ключовим словом (швидко для автопідказок)
+        public async Task<List<PowerToolDto>> SearchToolsAsync(string searchTerm)
+        {
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<TTContext>();
+                var query = context.PowerTools
+                    .Include(pt => pt.ToolType)
+                    .Include(pt => pt.ToolModel)
+                    .Include(pt => pt.Condition)
+                    .AsQueryable();
+
+                if (!string.IsNullOrWhiteSpace(searchTerm))
+                {
+                    query = query.Where(pt =>
+                        pt.ToolType.Name.Contains(searchTerm) ||
+                        pt.ToolModel.Name.Contains(searchTerm) ||
+                        pt.SerialNumber.Contains(searchTerm) ||
+                        pt.Condition.Name.Contains(searchTerm));
+                }
+
+                var tools = await query.ToListAsync();
+                return _mapper.Map<List<PowerToolDto>>(tools);
+            }
+        }
+
+        // Отримати всі PowerTool для однієї локації (швидко для модального вікна)
+        public async Task<List<PowerToolDto>> GetToolsByLocationWithWorkerAsync(int locationId)
+        {
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<TTContext>();
+                var tools = await context.PowerTools
+                    .Include(pt => pt.ToolType)
+                    .Include(pt => pt.ToolModel)
+                    .Include(pt => pt.Condition)
+                    .Include(pt => pt.LastWorker)
+                    .Where(pt => pt.LastLocationId == locationId)
+                    .ToListAsync();
+
+                return _mapper.Map<List<PowerToolDto>>(tools);
+            }
+        }
+
     }
 }

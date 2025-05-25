@@ -2,12 +2,28 @@
 @using Core.DTOs
 @using UIinterface.Services
 @inject LocationService LocationService
+@inject PowerToolService PowerToolService
+@inject HandToolService HandToolService
+@inject BataryService BataryService
+@inject WorkerService WorkerService
 @inject IJSRuntime JSRuntime
-@rendermode InteractiveServer
-
-<PageTitle>Locations Map</PageTitle>
 
 <h3>Locations Map</h3>
+
+<div class="mb-2" style="max-width: 400px;">
+    <input class="form-control" placeholder="Пошук локації або інструменту..." @bind="searchTerm" @bind:event="oninput"/>
+    @if (showSuggestions)
+    {
+        <ul class="list-group position-absolute" style="z-index:1000; max-height:200px; overflow-y:auto;">
+            @foreach (var suggestion in suggestions)
+            {
+                <li class="list-group-item list-group-item-action" @onclick="() => OnSuggestionSelected(suggestion)">
+                    @suggestion.Display
+                </li>
+            }
+        </ul>
+    }
+</div>
 
 @if (locations == null)
 {
@@ -15,44 +31,264 @@
 }
 else
 {
-    <div id="map-multiple" style="height: 500px; width: 100%;"></div>
+    <div id="map-multiple" style="height: 350px; width: 100%;"></div>
+}
+
+<!-- Модальне вікно підтвердження поїздки -->
+@if (isConfirmModalOpen && selectedLocation != null)
+{
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Підтвердження</h5>
+                    <button type="button" class="btn-close" @onclick="CloseConfirmModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Ви справді їдете на локацію <b>@selectedLocation.Name</b>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseConfirmModal">Скасувати</button>
+                    <button class="btn btn-primary" @onclick="ConfirmGoToLocation">Так</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Інформація про інструменти на локації -->
+@if (showToolsInfo && selectedLocation != null)
+{
+    <div class="mt-4">
+        <h5>@selectedLocation.Name</h5>
+        <div class="mb-2 text-muted">@selectedLocation.Description</div>
+        <h6>Інструменти на локації:</h6>
+        <ul>
+            @foreach (var tool in locationTools)
+            {
+                <li>
+                    <b>@tool.Type:</b> @tool.Name
+                    <span class="badge bg-@(tool.Status == "в користуванні" ? "warning" : "success")">@tool.Status</span>
+                    @if (tool.Status == "в користуванні")
+                    {
+                        <span> – @tool.WorkerName (@tool.WorkerEmail)</span>
+                    }
+                </li>
+            }
+        </ul>
+    </div>
 }
 
 @code {
     private List<LocationDto> locations;
+    private LocationDto selectedLocation;
+    private List<ToolInfo> locationTools = new();
+    private bool isConfirmModalOpen = false;
+    private bool showToolsInfo = false;
+
+    // Пошук
+    private string searchTerm;
+    private List<Suggestion> suggestions = new();
+    private bool showSuggestions = false;
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            // Завантаження всіх локацій
-            locations = (await LocationService.GetAllAsync()).ToList();
-            Console.WriteLine($"Loaded {locations.Count} locations.");
-            foreach (var location in locations)
-            {
-                Console.WriteLine($"Location: {location.Name}, Lat: {location.Latitute}, Lng: {location.Longitute}");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error loading locations: {ex.Message}");
-        }
+        locations = (await LocationService.GetAllAsync()).ToList();
     }
-
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (locations != null && locations.Any())
+        if (firstRender && locations != null && locations.Any())
         {
-            try
-            {
-                // Передача даних про локації в JavaScript
-                await JSRuntime.InvokeVoidAsync("initializeLocationsMap", locations);
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Error initializing map: {ex.Message}");
-            }
+            await JSRuntime.InvokeVoidAsync(
+                "initializeLocationsMapWithSingleCallback",
+                locations,
+                DotNetObjectReference.Create(this)
+            );
         }
+    }
+
+    // JS callback: клік по маркеру
+    [JSInvokable]
+    public async Task ShowLocationModal(int locationId)
+    {
+        selectedLocation = locations.FirstOrDefault(l => l.Id == locationId);
+        isConfirmModalOpen = true;
+        showToolsInfo = false;
+        StateHasChanged();
+    }
+
+    private void CloseConfirmModal()
+    {
+        isConfirmModalOpen = false;
+        selectedLocation = null;
+        showToolsInfo = false;
+    }
+
+    private async Task ConfirmGoToLocation()
+    {
+        isConfirmModalOpen = false;
+        showToolsInfo = true;
+        locationTools = await LoadToolsForLocation(selectedLocation.Id);
+        StateHasChanged();
+    }
+
+    private async Task<List<ToolInfo>> LoadToolsForLocation(int locationId)
+    {
+        var result = new List<ToolInfo>();
+        var powerTools = await PowerToolService.GetToolsByLocationAsync(locationId);
+        foreach (var tool in powerTools)
+        {
+            result.Add(new ToolInfo
+            {
+                Type = "PowerTool",
+                Name = tool.ToolTypeName ?? tool.SerialNumber,
+                Status = tool.LastWorkerId.HasValue ? "в користуванні" : "на складі",
+                WorkerName = tool.LastWorkerId.HasValue ? await GetWorkerName(tool.LastWorkerId.Value) : null,
+                WorkerEmail = tool.LastWorkerId.HasValue ? await GetWorkerEmail(tool.LastWorkerId.Value) : null
+            });
+        }
+        var handTools = await HandToolService.GetToolsByLocationAsync(locationId);
+        foreach (var tool in handTools)
+        {
+            result.Add(new ToolInfo
+            {
+                Type = "HandTool",
+                Name = tool.Name,
+                Status = tool.LastWorkerId.HasValue ? "в користуванні" : "на складі",
+                WorkerName = tool.LastWorkerId.HasValue ? await GetWorkerName(tool.LastWorkerId.Value) : null,
+                WorkerEmail = tool.LastWorkerId.HasValue ? await GetWorkerEmail(tool.LastWorkerId.Value) : null
+            });
+        }
+        var bataries = await BataryService.GetToolsByLocationAsync(locationId);
+        foreach (var tool in bataries)
+        {
+            result.Add(new ToolInfo
+            {
+                Type = "Batary",
+                Name = tool.BataryModelName ?? tool.SerialNumber,
+                Status = tool.LastWorkerId.HasValue ? "в користуванні" : "на складі",
+                WorkerName = tool.LastWorkerId.HasValue ? await GetWorkerName(tool.LastWorkerId.Value) : null,
+                WorkerEmail = tool.LastWorkerId.HasValue ? await GetWorkerEmail(tool.LastWorkerId.Value) : null
+            });
+        }
+        return result;
+    }
+
+    private async Task<string> GetWorkerName(int workerId)
+    {
+        var worker = await WorkerService.GetByIdAsync(workerId);
+        return worker != null ? $"{worker.FirstName} {worker.LastName}" : "";
+    }
+
+    private async Task<string> GetWorkerEmail(int workerId)
+    {
+        var worker = await WorkerService.GetByIdAsync(workerId);
+        return worker?.Email ?? "";
+    }
+
+    // --- Пошук і підказки ---
+    private async Task OnSearchChanged(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString();
+        await DoSearch();
+    }
+
+    private async Task OnSearchChanged()
+    {
+        await DoSearch();
+    }
+
+    private async Task DoSearch()
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            showSuggestions = false;
+            suggestions.Clear();
+            return;
+        }
+
+        // Пошук локацій
+        var locMatches = locations
+            .Where(l => l.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+            .Select(l => new Suggestion
+            {
+                Type = "Location",
+                Display = $"Локація: {l.Name}",
+                Lat = l.Latitute,
+                Lng = l.Longitute,
+                LocationId = l.Id
+            });
+
+        // Пошук інструментів (по всіх одразу, без циклів)
+        var handTools = await HandToolService.SearchToolsAsync(searchTerm);
+        var powerTools = await PowerToolService.SearchToolsAsync(searchTerm);
+        var bataries = await BataryService.SearchToolsAsync(searchTerm);
+
+        var toolMatches = handTools.Select(t => new Suggestion
+            {
+                Type = "Tool",
+                Display = $"Інструмент: {t.Name} (локація: {locations.FirstOrDefault(l => l.Id == t.LastLocationId)?.Name})",
+                Lat = locations.FirstOrDefault(l => l.Id == t.LastLocationId)?.Latitute ?? 0,
+                Lng = locations.FirstOrDefault(l => l.Id == t.LastLocationId)?.Longitute ?? 0,
+                LocationId = t.LastLocationId
+            })
+        .Concat(powerTools.Select(t => new Suggestion
+            {
+                Type = "Tool",
+                Display = $"Інструмент: {t.ToolTypeName ?? t.SerialNumber} (локація: {locations.FirstOrDefault(l => l.Id == t.LastLocationId)?.Name})",
+                Lat = locations.FirstOrDefault(l => l.Id == t.LastLocationId)?.Latitute ?? 0,
+                Lng = locations.FirstOrDefault(l => l.Id == t.LastLocationId)?.Longitute ?? 0,
+                LocationId = t.LastLocationId ?? 0
+            }))
+        .Concat(bataries.Select(t => new Suggestion
+            {
+                Type = "Tool",
+                Display = $"Інструмент: {t.BataryModelName ?? t.SerialNumber} (локація: {locations.FirstOrDefault(l => l.Id == t.LastLocationId)?.Name})",
+                Lat = locations.FirstOrDefault(l => l.Id == t.LastLocationId)?.Latitute ?? 0,
+                Lng = locations.FirstOrDefault(l => l.Id == t.LastLocationId)?.Longitute ?? 0,
+                LocationId = t.LastLocationId
+            }));
+
+        suggestions = locMatches.Concat(toolMatches).Take(10).ToList();
+        showSuggestions = suggestions.Any();
+    }
+
+    private async Task OnSuggestionSelected(Suggestion suggestion)
+    {
+        showSuggestions = false;
+        searchTerm = suggestion.Display;
+
+        // Фокусуємо карту на локації
+        await JSRuntime.InvokeVoidAsync("focusLocationOnMap", suggestion.Lat, suggestion.Lng);
+
+        // Якщо це локація — відкриваємо підтвердження
+        if (suggestion.Type == "Location")
+        {
+            await ShowLocationModal(suggestion.LocationId);
+        }
+        // Якщо це інструмент — відкриваємо підтвердження для локації інструменту
+        else if (suggestion.Type == "Tool")
+        {
+            await ShowLocationModal(suggestion.LocationId);
+        }
+    }
+
+    public class ToolInfo
+    {
+        public string Type { get; set; }
+        public string Name { get; set; }
+        public string Status { get; set; }
+        public string WorkerName { get; set; }
+        public string WorkerEmail { get; set; }
+    }
+
+    public class Suggestion
+    {
+        public string Type { get; set; } // "Location" or "Tool"
+        public string Display { get; set; }
+        public double Lat { get; set; }
+        public double Lng { get; set; }
+        public int LocationId { get; set; }
     }
 }

@@ -149,6 +149,35 @@ namespace UIinterface.Services
             }).ToList();
         }
 
+        public async Task<List<HandToolDto>> GetToolsByLocationAsync(int locationId)
+        {
+            var all = await GetAllAsync();
+            return all.Where(t => t.LastLocationId == locationId).ToList();
+        }
+
+        public async Task<List<HandToolDto>> SearchToolsAsync(string searchTerm)
+        {
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<TTContext>();
+                var query = context.HandTools
+                    .Include(ht => ht.ToolType)
+                    .Include(ht => ht.Brand)
+                    .Include(ht => ht.Condition)
+                    .AsQueryable();
+
+                if (!string.IsNullOrWhiteSpace(searchTerm))
+                {
+                    query = query.Where(ht =>
+                        ht.ToolType.Name.Contains(searchTerm) ||
+                        ht.Brand.Name.Contains(searchTerm) ||
+                        ht.Condition.Name.Contains(searchTerm));
+                }
+
+                var tools = await query.ToListAsync();
+                return _mapper.Map<List<HandToolDto>>(tools);
+            }
+        }
 
     }
 }
