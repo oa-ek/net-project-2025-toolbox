@@ -1,10 +1,16 @@
 ﻿@page "/add-boss"
 @using Core.DTOs
 @using UIinterface.Services
+@using UIupdated.Services
 @inject BossService BossService
 @inject LocationService LocationService
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
+@inject IUserService UserService
+@inject BossService BossService
+@inject NavigationManager Navigation
+@inject WorkerService WorkerService
+@inject SystemAdminService SystemAdminService
 
 <PageTitle>Add Boss</PageTitle>
 
@@ -26,9 +32,16 @@
         </div>
 
         <div class="form-group">
-            <label for="email" class="form-label">Email</label>
-            <InputText id="email" class="form-input" @bind-Value="boss.Email" />
+            <label for="email" class="form-label">User Email</label>
+            <InputSelect id="email" class="form-input" @bind-Value="boss.Email">
+                <option value="">Select user email</option>
+                @foreach (var user in users.OrderBy(u => u.Email))
+                {
+                    <option value="@user.Email">@user.Email</option>
+                }
+            </InputSelect>
         </div>
+
 
         <div class="form-group">
             <label for="phone" class="form-label">Phone</label>
@@ -61,6 +74,8 @@
 @code {
     private BossDto boss = new BossDto();
     private List<LocationViewModel> locations = new List<LocationViewModel>();
+    private List<UserDto> users = new();
+    private bool isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -71,7 +86,31 @@
                 Name = l.Name,
                 IsSelected = false
             }).ToList();
+
+        // Отримати всіх користувачів
+        users = (await UserService.GetAllUsersAsync()).ToList();
+
+        // Вибрати зайняті email-и (Boss, Worker, SystemAdmin)
+        var allBosses = await BossService.GetAllAsync();
+        var allWorkers = await WorkerService.GetAllAsync();
+        var allAdmins = await SystemAdminService.GetAllAsync();
+
+        var occupiedEmails = new HashSet<string>(
+            allBosses.Select(b => b.Email)
+            .Concat(allWorkers.Select(w => w.Email))
+            .Concat(allAdmins.Select(a => a.Email)),
+            StringComparer.OrdinalIgnoreCase
+        );
+
+        // Доступні тільки ті, хто не має ролей і не зайнятий
+        users = users
+            .Where(u => string.IsNullOrEmpty(u.Email) || !occupiedEmails.Contains(u.Email))
+            .Where(u => u.Roles == null || u.Roles.Count == 0)
+            .ToList();
+
+        isLoading = false;
     }
+
 
     private async Task SaveBoss()
     {
@@ -79,8 +118,17 @@
         boss.Locations = selectedLocations;
 
         await BossService.AddAsync(boss);
+
+        // Призначити роль Boss
+        var user = await UserService.GetUserByEmailAsync(boss.Email);
+        if (user != null)
+        {
+            await UserService.AssignRoleBossAsync(user.Id);
+        }
+
         Navigation.NavigateTo("/bosses");
     }
+
 
     private void GoBack()
     {

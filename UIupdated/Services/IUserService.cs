@@ -14,6 +14,10 @@ namespace UIupdated.Services
         Task<bool> RemoveRoleAsync(string userId, string roleName);
         Task<bool> RemoveRoleByIdAsync(string userId, string roleId);
         Task<IdentityRole?> GetRoleByNameAsync(string roleName);
+        Task<bool> AssignRoleAdminAsync(string userId);
+        Task<bool> AssignRoleBossAsync(string userId);
+
+
     }
 
 
@@ -38,6 +42,27 @@ namespace UIupdated.Services
             _dbContext = dbContext;
         }
 
+        public async Task<bool> AssignRoleAdminAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+                return false;
+
+            var roleExists = await _roleManager.RoleExistsAsync("Admin");
+            if (!roleExists)
+                return false;
+
+            var alreadyInRole = await _userManager.IsInRoleAsync(user, "Admin");
+            if (alreadyInRole)
+                return true;
+
+            var result = await _userManager.AddToRoleAsync(user, "Admin");
+            return result.Succeeded;
+        }
+        public async Task<bool> AssignRoleBossAsync(string userId)
+        {
+            return await AssignRoleAsync(userId, "Boss");
+        }
 
         public async Task<bool> RemoveRoleByIdAsync(string userId, string roleId)
         {

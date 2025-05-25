@@ -218,31 +218,31 @@
         var user = await UserService.GetUserByEmailAsync(worker.Email);
         if (user != null)
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"User ID: {user.Id}");
+          //  await JSRuntime.InvokeVoidAsync("alert", $"User ID: {user.Id}");
 
             var workerRole = await UserService.GetRoleByNameAsync("Worker");
             if (workerRole != null)
             {
-                await JSRuntime.InvokeVoidAsync("alert", $"Role ID: {workerRole.Id}");
+               // await JSRuntime.InvokeVoidAsync("alert", $"Role ID: {workerRole.Id}");
 
                 var removed = await UserService.RemoveRoleByIdAsync(user.Id, workerRole.Id);
                 if (removed)
                 {
-                    await JSRuntime.InvokeVoidAsync("alert", $"User with ID {user.Id} had role {workerRole.Id} removed.");
+                  //  await JSRuntime.InvokeVoidAsync("alert", $"User with ID {user.Id} had role {workerRole.Id} removed.");
                 }
                 else
                 {
-                    await JSRuntime.InvokeVoidAsync("alert", $"Failed to remove role {workerRole.Id} from user {user.Id}.");
+                  //  await JSRuntime.InvokeVoidAsync("alert", $"Failed to remove role {workerRole.Id} from user {user.Id}.");
                 }
             }
             else
             {
-                await JSRuntime.InvokeVoidAsync("alert", $"Role 'Worker' not found.");
+              //  await JSRuntime.InvokeVoidAsync("alert", $"Role 'Worker' not found.");
             }
         }
         else
         {
-            await JSRuntime.InvokeVoidAsync("alert", $"User with email {worker.Email} not found.");
+           // await JSRuntime.InvokeVoidAsync("alert", $"User with email {worker.Email} not found.");
         }
 
         await WorkerService.DeleteAsync(worker.Id);
