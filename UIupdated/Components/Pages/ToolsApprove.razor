@@ -13,7 +13,12 @@
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize(Roles = "Admin,Boss,Worker")]
 
-<h3>Tool Management</h3>
+<h3>Tool Management</h3><!---->
+<div class="mt-4 text-end">
+    <button type="button" class="btn btn-primary" @onclick="GoLocationsMap">
+        Go to LocationsMap
+    </button>
+</div>
 
 <!-- Вибір типу інструменту -->
 <div class="mb-3">
@@ -115,12 +120,12 @@
             Підтвердити вибір (@GetSelectedToolsCount() обрано)
         </button>
     </div>
-    <!---->
+    <!--
     <div class="mt-4 text-end">
         <button type="button" class="btn btn-primary" @onclick="GoLocationsMap">
             Go to LocationsMap
         </button>
-    </div>
+    </div> -->
 }
 
 <!-- Модальне вікно підтвердження інструментів -->
