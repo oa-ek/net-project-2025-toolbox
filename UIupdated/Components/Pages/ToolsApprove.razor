@@ -212,11 +212,17 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" @onclick="CloseLocationModal">Скасувати</button>
-                    <button type="button" class="btn btn-primary" @onclick="ConfirmLocationSelection"
+                    <button type="button" class="btn btn-primary" @onclick="ConfirmLocationSelection"                        
                             disabled="@(selectedLocationId == 0)">
                         Підтвердити локацію
+                    </button>                    
+                </div>
+                <div class="mt-4 text-end">
+                    <button type="button" class="btn btn-primary" @onclick="GoLocationsMap">
+                        Go to LocationsMap
                     </button>
                 </div>
+
             </div>
         </div>
     </div>
@@ -232,6 +238,10 @@
 }
 
 @code {
+    private void GoLocationsMap()
+    {
+        Navigation.NavigateTo("/locations-map");
+    }
     private string selectedToolType = "";
     private List<PowerToolDto> allPowerTools = new();
     private List<HandToolDto> allHandTools = new();

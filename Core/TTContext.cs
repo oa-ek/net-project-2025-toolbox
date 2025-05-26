@@ -44,6 +44,8 @@ namespace Core
                 .WithMany()
                 .HasForeignKey(b => b.LastWorkerId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+
         }
 
     }

@@ -12,17 +12,22 @@
         <NavLink class="nav-link text-white" href="" Match="NavLinkMatch.All">Home</NavLink>
 
         <AuthorizeView>
-            <Authorized>
-                <AuthorizeView Roles="Admin,Boss" Context="roleContext">
+            <Authorized Context="outerContext">
+                <AuthorizeView Roles="Admin,Boss" Context="adminContext">
                     <NavLink class="nav-link text-white" href="admin">Admin Panel</NavLink>
                 </AuthorizeView>
-                <NavLink class="nav-link text-white" href="Account/Manage">@context.User.Identity?.Name</NavLink>
+
+                <!-- КНОПКА MANAGE ДЛЯ Worker, Admin, Boss -->
+                <AuthorizeView Roles="Worker,Admin,Boss" Context="manageContext">
+                    <NavLink class="nav-link text-white" href="tools-management">Manage</NavLink>
+                </AuthorizeView>
+
+                <NavLink class="nav-link text-white" href="Account/Manage">@outerContext.User.Identity?.Name</NavLink>
                 <form action="Account/Logout" method="post" class="d-inline">
                     <AntiforgeryToken />
                     <input type="hidden" name="ReturnUrl" value="@currentUrl" />
                     <button type="submit" class="btn-link nav-link text-white">Logout</button>
                 </form>
-
             </Authorized>
             <NotAuthorized>
                 <NavLink class="nav-link text-white" href="Account/Register">Register</NavLink>
