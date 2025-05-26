@@ -15,6 +15,9 @@
         public int? LastWorkerId { get; set; }
         public int LastLocationId { get; set; }
 
+        public string ToolTypeName { get; set; } // Назва типу інструменту (модель)
+        public string BrandName { get; set; } // ← додай
+
     }
 }
 

@@ -38,6 +38,6 @@ namespace Core.DTOs
 
         // Додано для відстеження вибору
         public bool IsSelected { get; set; } = false;
-
+        public string BrandName { get; set; } // ← якщо потрібно
     }
 }

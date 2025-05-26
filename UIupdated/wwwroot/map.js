@@ -158,6 +158,20 @@ window.initializeLocationSelectionMap = function (locations, dotNetRef) {
     });
 };
 
+window.initializeLocationsMapWithSingleCallback = function (locations, dotNetHelper) {
+    var map = L.map('locations-view-map').setView([50.45, 30.52], 6); // Київ, наприклад
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+    // Додаємо маркери для локацій
+    locations.forEach(function (loc) {
+        L.marker([loc.latitute, loc.longitute]).addTo(map)
+            .bindPopup(loc.name);
+    });
+    // Збережіть map у window, якщо потрібно для подальших викликів
+    window._locationsMap = map;
+};
+
 
 
 // Експортуємо функції для використання в Blazor

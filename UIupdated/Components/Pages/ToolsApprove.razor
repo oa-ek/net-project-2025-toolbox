@@ -74,7 +74,7 @@
                                 <input type="checkbox" @bind="tool.IsSelected" />
                             </td>
                             <td>@tool.Name</td>
-                            <td>@tool.ToolTypeId</td> <!-- Якщо є ToolTypeName, використайте його -->
+                            <td>@tool.ToolTypeName</td>
                             <td>-</td>
                             <td>
                                 <span class="badge bg-@(tool.LastWorkerId.HasValue ? "warning" : "success")">
@@ -310,7 +310,7 @@
                 ? allHandTools
                 : allHandTools.Where(t =>
                     (t.Name ?? "").Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                    t.ToolTypeId.ToString().Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+                    (t.ToolTypeName ?? "").Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
                 ).ToList();
         }
         else if (selectedToolType == "Batary")
@@ -484,7 +484,7 @@
         foreach (var t in allPowerTools?.Where(t => t.IsSelected) ?? Enumerable.Empty<PowerToolDto>())
             yield return ("PowerTool", t.Id, t.ToolTypeName, t.ToolModelName);
         foreach (var t in allHandTools?.Where(t => t.IsSelected) ?? Enumerable.Empty<HandToolDto>())
-            yield return ("HandTool", t.Id, t.Name, t.ToolTypeId.ToString());
+            yield return ("HandTool", t.Id, t.Name, t.ToolTypeName);
         foreach (var t in allBataries?.Where(t => t.IsSelected) ?? Enumerable.Empty<BataryDto>())
             yield return ("Batary", t.Id, t.BataryModelName, t.SerialNumber);
     }

@@ -19,11 +19,13 @@
                    class="form-control"
                    placeholder="Пошук локації або інструменту..."
                    @bind="searchTerm"
-                   @bind:event="oninput"/>
+                   @bind:event="oninput" />
             <button class="btn btn-outline-secondary" type="button" @onclick="ClearSearch">
                 <i class="fas fa-times"></i> Очистити
             </button>
         </div>
+
+        <!-- Підказки для пошуку -->
         @if (showSuggestions && suggestions.Any())
         {
             <div class="card mt-2 position-absolute" style="z-index: 1000; width: 100%; max-width: 500px;">
@@ -64,7 +66,7 @@
     <div class="card-body p-0">
         @if (locations == null)
         {
-            <div class="d-flex justify-content-center align-items-center" style="height: 400px;">
+            <div>
                 <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">Завантаження...</span>
                 </div>
@@ -102,7 +104,9 @@
                     </button>
                 </div>
             </div>
+
             <hr />
+
             <div class="row">
                 <div class="col-12">
                     <h6>
@@ -112,6 +116,7 @@
                             <i class="fas fa-refresh"></i> Оновити
                         </button>
                     </h6>
+
                     @if (isLoadingTools)
                     {
                         <div class="d-flex justify-content-center py-3">
@@ -218,6 +223,9 @@
     private LocationDto selectedLocation;
     private List<ToolInfo> locationTools = new();
     private List<SearchSuggestion> suggestions = new();
+    private List<PowerToolDto> allPowerTools = new();
+    private List<HandToolDto> allHandTools = new();
+    private List<BataryDto> allBataries = new();
 
     private string searchTerm = "";
     private bool showSuggestions = false;
@@ -231,7 +239,14 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadLocationsAsync();
+        await LoadAllToolsAsync();
         await CalculateStatistics();
+    }
+    private async Task LoadAllToolsAsync()
+    {
+        allPowerTools = (await PowerToolService.GetAllAsync()).ToList();
+        allHandTools = (await HandToolService.GetAllAsync()).ToList();
+        allBataries = (await BataryService.GetAllAsync()).ToList();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -241,6 +256,7 @@
             await InitializeMap();
         }
     }
+
 
     private async Task LoadLocationsAsync()
     {
@@ -285,34 +301,34 @@
         var result = new List<ToolInfo>();
         var powerTools = await PowerToolService.GetToolsByLocationAsync(locationId);
         result.AddRange(powerTools.Select(t => new ToolInfo
-        {
-            Id = t.Id,
-            Type = "PowerTool",
-            Name = t.ToolTypeName ?? t.SerialNumber,
-            SerialNumber = t.SerialNumber,
-            Status = t.LastWorkerId.HasValue ? "В користуванні" : "Доступний",
-            WorkerName = t.LastWorkerId.HasValue ? GetWorkerNameSync(t.LastWorkerId.Value) : null
-        }));
+            {
+                Id = t.Id,
+                Type = "PowerTool",
+                Name = t.ToolTypeName ?? t.SerialNumber,
+                SerialNumber = t.SerialNumber,
+                Status = t.LastWorkerId.HasValue ? "В користуванні" : "Доступний",
+                WorkerName = t.LastWorkerId.HasValue ? GetWorkerNameSync(t.LastWorkerId.Value) : null
+            }));
         var handTools = await HandToolService.GetToolsByLocationAsync(locationId);
         result.AddRange(handTools.Select(t => new ToolInfo
-        {
-            Id = t.Id,
-            Type = "HandTool",
-            Name = t.Name,
-            SerialNumber = null,
-            Status = t.LastWorkerId.HasValue ? "В користуванні" : "Доступний",
-            WorkerName = t.LastWorkerId.HasValue ? GetWorkerNameSync(t.LastWorkerId.Value) : null
-        }));
+            {
+                Id = t.Id,
+                Type = "HandTool",
+                Name = t.Name,
+                SerialNumber = null,
+                Status = t.LastWorkerId.HasValue ? "В користуванні" : "Доступний",
+                WorkerName = t.LastWorkerId.HasValue ? GetWorkerNameSync(t.LastWorkerId.Value) : null
+            }));
         var bataries = await BataryService.GetToolsByLocationAsync(locationId);
         result.AddRange(bataries.Select(t => new ToolInfo
-        {
-            Id = t.Id,
-            Type = "Batary",
-            Name = t.BataryModelName ?? t.SerialNumber,
-            SerialNumber = t.SerialNumber,
-            Status = t.LastWorkerId.HasValue ? "В користуванні" : "Доступний",
-            WorkerName = t.LastWorkerId.HasValue ? GetWorkerNameSync(t.LastWorkerId.Value) : null
-        }));
+            {
+                Id = t.Id,
+                Type = "Batary",
+                Name = t.BataryModelName ?? t.SerialNumber,
+                SerialNumber = t.SerialNumber,
+                Status = t.LastWorkerId.HasValue ? "В користуванні" : "Доступний",
+                WorkerName = t.LastWorkerId.HasValue ? GetWorkerNameSync(t.LastWorkerId.Value) : null
+            }));
         return result;
     }
 
@@ -349,12 +365,12 @@
         var locMatches = locations
             .Where(l => l.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
             .Select(l => new SearchSuggestion
-            {
-                Type = "location",
-                Title = l.Name,
-                Description = l.Description,
-                LocationId = l.Id
-            });
+                {
+                    Type = "location",
+                    Title = l.Name,
+                    Description = l.Description,
+                    LocationId = l.Id
+                });
 
         // Пошук інструментів
         var powerTools = await PowerToolService.SearchToolsAsync(searchTerm);
@@ -362,26 +378,26 @@
         var bataries = await BataryService.SearchToolsAsync(searchTerm);
 
         var toolMatches = powerTools.Select(t => new SearchSuggestion
-        {
-            Type = "tool",
-            Title = t.ToolTypeName ?? t.SerialNumber,
-            Description = $"PowerTool SN: {t.SerialNumber}",
-            LocationId = t.LastLocationId ?? 0
-        })
+            {
+                Type = "tool",
+                Title = t.ToolTypeName ?? t.SerialNumber,
+                Description = $"PowerTool SN: {t.SerialNumber}",
+                LocationId = t.LastLocationId ?? 0
+            })
         .Concat(handTools.Select(t => new SearchSuggestion
-        {
-            Type = "tool",
-            Title = t.Name,
-            Description = $"HandTool",
-            LocationId = t.LastLocationId
-        }))
+            {
+                Type = "tool",
+                Title = t.Name,
+                Description = $"HandTool: {t.ToolTypeName}",
+                LocationId = t.LastLocationId
+            }))
         .Concat(bataries.Select(t => new SearchSuggestion
-        {
-            Type = "tool",
-            Title = t.BataryModelName ?? t.SerialNumber,
-            Description = $"Batary SN: {t.SerialNumber}",
-            LocationId = t.LastLocationId
-        }));
+            {
+                Type = "tool",
+                Title = t.BataryModelName ?? t.SerialNumber,
+                Description = $"Batary SN: {t.SerialNumber}",
+                LocationId = t.LastLocationId
+            }));
 
         suggestions = locMatches.Concat(toolMatches).Take(10).ToList();
         showSuggestions = suggestions.Any();
