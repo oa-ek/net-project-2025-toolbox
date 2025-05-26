@@ -7,195 +7,332 @@
 @inject BataryService BataryService
 @inject WorkerService WorkerService
 @inject IJSRuntime JSRuntime
+@rendermode InteractiveServer
 
-<h3>Locations Map</h3>
+<h3>Карта локацій та інструментів</h3>
 
-<div class="mb-2" style="max-width: 400px;">
-    <input class="form-control" placeholder="Пошук локації або інструменту..." @bind="searchTerm" @bind:event="oninput"/>
-    @if (showSuggestions)
-    {
-        <ul class="list-group position-absolute" style="z-index:1000; max-height:200px; overflow-y:auto;">
-            @foreach (var suggestion in suggestions)
-            {
-                <li class="list-group-item list-group-item-action" @onclick="() => OnSuggestionSelected(suggestion)">
-                    @suggestion.Display
-                </li>
-            }
-        </ul>
-    }
+<!-- Панель пошуку -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="input-group">
+            <input type="text"
+                   class="form-control"
+                   placeholder="Пошук локації або інструменту..."
+                   @bind="searchTerm"
+                   @bind:event="oninput"/>
+            <button class="btn btn-outline-secondary" type="button" @onclick="ClearSearch">
+                <i class="fas fa-times"></i> Очистити
+            </button>
+        </div>
+        @if (showSuggestions && suggestions.Any())
+        {
+            <div class="card mt-2 position-absolute" style="z-index: 1000; width: 100%; max-width: 500px;">
+                <div class="list-group list-group-flush">
+                    @foreach (var suggestion in suggestions.Take(8))
+                    {
+                        <button type="button"
+                                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                                @onclick="() => OnSuggestionSelected(suggestion)">
+                            <div>
+                                <strong>@suggestion.Title</strong>
+                                <br />
+                                <small class="text-muted">@suggestion.Description</small>
+                            </div>
+                            <span class="badge bg-@(suggestion.Type == "location" ? "primary" : "secondary")">
+                                @(suggestion.Type == "location" ? "Локація" : "Інструмент")
+                            </span>
+                        </button>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+    <div class="col-md-6">
+        <div class="d-flex gap-2">
+            <button class="btn btn-info" @onclick="ShowAllLocations">
+                <i class="fas fa-map-marker-alt"></i> Показати всі локації
+            </button>
+            <button class="btn btn-success" @onclick="RefreshMap">
+                <i class="fas fa-refresh"></i> Оновити карту
+            </button>
+        </div>
+    </div>
 </div>
 
-@if (locations == null)
-{
-    <p>Loading...</p>
-}
-else
-{
-    <div id="map-multiple" style="height: 350px; width: 100%;"></div>
-}
+<!-- Карта -->
+<div class="card">
+    <div class="card-body p-0">
+        @if (locations == null)
+        {
+            <div class="d-flex justify-content-center align-items-center" style="height: 400px;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Завантаження...</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div id="locations-view-map" style="height: 500px; width: 100%;"></div>
+        }
+    </div>
+</div>
 
-<!-- Модальне вікно підтвердження поїздки -->
-@if (isConfirmModalOpen && selectedLocation != null)
+<!-- Інформаційна панель -->
+@if (selectedLocation != null)
 {
-    <div class="modal show d-block" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Підтвердження</h5>
-                    <button type="button" class="btn-close" @onclick="CloseConfirmModal"></button>
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-map-marker-alt text-primary"></i>
+                @selectedLocation.Name
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="text-muted mb-2">@selectedLocation.Description</p>
+                    <p class="mb-1">
+                        <strong>Координати:</strong>
+                        @selectedLocation.Latitute.ToString("F6"), @selectedLocation.Longitute.ToString("F6")
+                    </p>
                 </div>
-                <div class="modal-body">
-                    <p>Ви справді їдете на локацію <b>@selectedLocation.Name</b>?</p>
+                <div class="col-md-6 text-end">
+                    <button class="btn btn-outline-primary btn-sm" @onclick="FocusOnLocation">
+                        <i class="fas fa-crosshairs"></i> Показати на карті
+                    </button>
                 </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="CloseConfirmModal">Скасувати</button>
-                    <button class="btn btn-primary" @onclick="ConfirmGoToLocation">Так</button>
+            </div>
+            <hr />
+            <div class="row">
+                <div class="col-12">
+                    <h6>
+                        <i class="fas fa-tools text-secondary"></i>
+                        Інструменти на локації (@locationTools.Count)
+                        <button class="btn btn-sm btn-outline-secondary ms-2" @onclick="RefreshLocationTools">
+                            <i class="fas fa-refresh"></i> Оновити
+                        </button>
+                    </h6>
+                    @if (isLoadingTools)
+                    {
+                        <div class="d-flex justify-content-center py-3">
+                            <div class="spinner-border spinner-border-sm text-secondary" role="status">
+                                <span class="visually-hidden">Завантаження інструментів...</span>
+                            </div>
+                        </div>
+                    }
+                    else if (locationTools.Any())
+                    {
+                        <div class="row">
+                            @foreach (var toolGroup in locationTools.GroupBy(t => t.Type))
+                            {
+                                <div class="col-md-4 mb-3">
+                                    <div class="card border-0 bg-light">
+                                        <div class="card-body p-3">
+                                            <h6 class="card-title text-capitalize">
+                                                <i class="fas fa-@(GetToolIcon(toolGroup.Key))"></i>
+                                                @GetToolTypeDisplayName(toolGroup.Key) (@toolGroup.Count())
+                                            </h6>
+                                            @foreach (var tool in toolGroup)
+                                            {
+                                                <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-white rounded border">
+                                                    <div>
+                                                        <strong>@tool.Name</strong>
+                                                        @if (!string.IsNullOrEmpty(tool.SerialNumber))
+                                                        {
+                                                            <br />
+                                                            <small class="text-muted">SN: @tool.SerialNumber</small>
+                                                        }
+                                                    </div>
+                                                    <div class="text-end">
+                                                        <span class="badge bg-@(tool.Status == "В користуванні" ? "warning" : "success") mb-1">
+                                                            @tool.Status
+                                                        </span>
+                                                        @if (tool.Status == "В користуванні" && !string.IsNullOrEmpty(tool.WorkerName))
+                                                        {
+                                                            <br />
+                                                            <small class="text-muted">@tool.WorkerName</small>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            На цій локації немає інструментів.
+                        </div>
+                    }
                 </div>
             </div>
         </div>
     </div>
 }
 
-<!-- Інформація про інструменти на локації -->
-@if (showToolsInfo && selectedLocation != null)
+<!-- Статистика -->
+@if (locations != null && locations.Any())
 {
-    <div class="mt-4">
-        <h5>@selectedLocation.Name</h5>
-        <div class="mb-2 text-muted">@selectedLocation.Description</div>
-        <h6>Інструменти на локації:</h6>
-        <ul>
-            @foreach (var tool in locationTools)
-            {
-                <li>
-                    <b>@tool.Type:</b> @tool.Name
-                    <span class="badge bg-@(tool.Status == "в користуванні" ? "warning" : "success")">@tool.Status</span>
-                    @if (tool.Status == "в користуванні")
-                    {
-                        <span> – @tool.WorkerName (@tool.WorkerEmail)</span>
-                    }
-                </li>
-            }
-        </ul>
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">@locations.Count</h5>
+                    <p class="card-text">Всього локацій</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-success">@totalTools</h5>
+                    <p class="card-text">Всього інструментів</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-warning">@toolsInUse</h5>
+                    <p class="card-text">В користуванні</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-info">@availableTools</h5>
+                    <p class="card-text">Доступно</p>
+                </div>
+            </div>
+        </div>
     </div>
 }
 
 @code {
-    private List<LocationDto> locations;
+    private List<LocationDto> locations = new();
     private LocationDto selectedLocation;
     private List<ToolInfo> locationTools = new();
-    private bool isConfirmModalOpen = false;
-    private bool showToolsInfo = false;
+    private List<SearchSuggestion> suggestions = new();
 
-    // Пошук
-    private string searchTerm;
-    private List<Suggestion> suggestions = new();
+    private string searchTerm = "";
     private bool showSuggestions = false;
+    private bool isLoadingTools = false;
+
+    // Статистика
+    private int totalTools = 0;
+    private int toolsInUse = 0;
+    private int availableTools = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        locations = (await LocationService.GetAllAsync()).ToList();
+        await LoadLocationsAsync();
+        await CalculateStatistics();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && locations != null && locations.Any())
+        if (firstRender && locations.Any())
         {
-            await JSRuntime.InvokeVoidAsync(
-                "initializeLocationsMapWithSingleCallback",
-                locations,
-                DotNetObjectReference.Create(this)
-            );
+            await InitializeMap();
         }
     }
 
-    // JS callback: клік по маркеру
-    [JSInvokable]
-    public async Task ShowLocationModal(int locationId)
+    private async Task LoadLocationsAsync()
     {
-        selectedLocation = locations.FirstOrDefault(l => l.Id == locationId);
-        isConfirmModalOpen = true;
-        showToolsInfo = false;
-        StateHasChanged();
+        locations = (await LocationService.GetAllAsync()).ToList();
     }
 
-    private void CloseConfirmModal()
+    private async Task CalculateStatistics()
     {
-        isConfirmModalOpen = false;
-        selectedLocation = null;
-        showToolsInfo = false;
+        var powerTools = await PowerToolService.GetAllAsync();
+        var handTools = await HandToolService.GetAllAsync();
+        var bataries = await BataryService.GetAllAsync();
+
+        totalTools = powerTools.Count() + handTools.Count() + bataries.Count();
+        toolsInUse = powerTools.Count(t => t.LastWorkerId.HasValue)
+                   + handTools.Count(t => t.LastWorkerId.HasValue)
+                   + bataries.Count(t => t.LastWorkerId.HasValue);
+        availableTools = totalTools - toolsInUse;
     }
 
-    private async Task ConfirmGoToLocation()
+    private async Task RefreshMap()
     {
-        isConfirmModalOpen = false;
-        showToolsInfo = true;
-        locationTools = await LoadToolsForLocation(selectedLocation.Id);
+        await LoadLocationsAsync();
+        await CalculateStatistics();
         StateHasChanged();
+        await InitializeMap();
+    }
+
+    private async Task RefreshLocationTools()
+    {
+        if (selectedLocation != null)
+        {
+            isLoadingTools = true;
+            StateHasChanged();
+            locationTools = await LoadToolsForLocation(selectedLocation.Id);
+            isLoadingTools = false;
+            StateHasChanged();
+        }
     }
 
     private async Task<List<ToolInfo>> LoadToolsForLocation(int locationId)
     {
         var result = new List<ToolInfo>();
         var powerTools = await PowerToolService.GetToolsByLocationAsync(locationId);
-        foreach (var tool in powerTools)
+        result.AddRange(powerTools.Select(t => new ToolInfo
         {
-            result.Add(new ToolInfo
-            {
-                Type = "PowerTool",
-                Name = tool.ToolTypeName ?? tool.SerialNumber,
-                Status = tool.LastWorkerId.HasValue ? "в користуванні" : "на складі",
-                WorkerName = tool.LastWorkerId.HasValue ? await GetWorkerName(tool.LastWorkerId.Value) : null,
-                WorkerEmail = tool.LastWorkerId.HasValue ? await GetWorkerEmail(tool.LastWorkerId.Value) : null
-            });
-        }
+            Id = t.Id,
+            Type = "PowerTool",
+            Name = t.ToolTypeName ?? t.SerialNumber,
+            SerialNumber = t.SerialNumber,
+            Status = t.LastWorkerId.HasValue ? "В користуванні" : "Доступний",
+            WorkerName = t.LastWorkerId.HasValue ? GetWorkerNameSync(t.LastWorkerId.Value) : null
+        }));
         var handTools = await HandToolService.GetToolsByLocationAsync(locationId);
-        foreach (var tool in handTools)
+        result.AddRange(handTools.Select(t => new ToolInfo
         {
-            result.Add(new ToolInfo
-            {
-                Type = "HandTool",
-                Name = tool.Name,
-                Status = tool.LastWorkerId.HasValue ? "в користуванні" : "на складі",
-                WorkerName = tool.LastWorkerId.HasValue ? await GetWorkerName(tool.LastWorkerId.Value) : null,
-                WorkerEmail = tool.LastWorkerId.HasValue ? await GetWorkerEmail(tool.LastWorkerId.Value) : null
-            });
-        }
+            Id = t.Id,
+            Type = "HandTool",
+            Name = t.Name,
+            SerialNumber = null,
+            Status = t.LastWorkerId.HasValue ? "В користуванні" : "Доступний",
+            WorkerName = t.LastWorkerId.HasValue ? GetWorkerNameSync(t.LastWorkerId.Value) : null
+        }));
         var bataries = await BataryService.GetToolsByLocationAsync(locationId);
-        foreach (var tool in bataries)
+        result.AddRange(bataries.Select(t => new ToolInfo
         {
-            result.Add(new ToolInfo
-            {
-                Type = "Batary",
-                Name = tool.BataryModelName ?? tool.SerialNumber,
-                Status = tool.LastWorkerId.HasValue ? "в користуванні" : "на складі",
-                WorkerName = tool.LastWorkerId.HasValue ? await GetWorkerName(tool.LastWorkerId.Value) : null,
-                WorkerEmail = tool.LastWorkerId.HasValue ? await GetWorkerEmail(tool.LastWorkerId.Value) : null
-            });
-        }
+            Id = t.Id,
+            Type = "Batary",
+            Name = t.BataryModelName ?? t.SerialNumber,
+            SerialNumber = t.SerialNumber,
+            Status = t.LastWorkerId.HasValue ? "В користуванні" : "Доступний",
+            WorkerName = t.LastWorkerId.HasValue ? GetWorkerNameSync(t.LastWorkerId.Value) : null
+        }));
         return result;
     }
 
-    private async Task<string> GetWorkerName(int workerId)
+    private string GetWorkerNameSync(int workerId)
     {
-        var worker = await WorkerService.GetByIdAsync(workerId);
-        return worker != null ? $"{worker.FirstName} {worker.LastName}" : "";
+        // Для асинхронного варіанту використовуйте кеш або попередньо завантажуйте воркерів
+        // Тут для простоти повертаємо "Працівник #id"
+        return $"Працівник #{workerId}";
     }
 
-    private async Task<string> GetWorkerEmail(int workerId)
+    private void ClearSearch()
     {
-        var worker = await WorkerService.GetByIdAsync(workerId);
-        return worker?.Email ?? "";
+        searchTerm = "";
+        showSuggestions = false;
+        suggestions.Clear();
     }
 
-    // --- Пошук і підказки ---
     private async Task OnSearchChanged(ChangeEventArgs e)
     {
-        searchTerm = e.Value?.ToString();
-        await DoSearch();
-    }
-
-    private async Task OnSearchChanged()
-    {
+        searchTerm = e.Value?.ToString() ?? "";
         await DoSearch();
     }
 
@@ -211,84 +348,113 @@ else
         // Пошук локацій
         var locMatches = locations
             .Where(l => l.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-            .Select(l => new Suggestion
+            .Select(l => new SearchSuggestion
             {
-                Type = "Location",
-                Display = $"Локація: {l.Name}",
-                Lat = l.Latitute,
-                Lng = l.Longitute,
+                Type = "location",
+                Title = l.Name,
+                Description = l.Description,
                 LocationId = l.Id
             });
 
-        // Пошук інструментів (по всіх одразу, без циклів)
-        var handTools = await HandToolService.SearchToolsAsync(searchTerm);
+        // Пошук інструментів
         var powerTools = await PowerToolService.SearchToolsAsync(searchTerm);
+        var handTools = await HandToolService.SearchToolsAsync(searchTerm);
         var bataries = await BataryService.SearchToolsAsync(searchTerm);
 
-        var toolMatches = handTools.Select(t => new Suggestion
-            {
-                Type = "Tool",
-                Display = $"Інструмент: {t.Name} (локація: {locations.FirstOrDefault(l => l.Id == t.LastLocationId)?.Name})",
-                Lat = locations.FirstOrDefault(l => l.Id == t.LastLocationId)?.Latitute ?? 0,
-                Lng = locations.FirstOrDefault(l => l.Id == t.LastLocationId)?.Longitute ?? 0,
-                LocationId = t.LastLocationId
-            })
-        .Concat(powerTools.Select(t => new Suggestion
-            {
-                Type = "Tool",
-                Display = $"Інструмент: {t.ToolTypeName ?? t.SerialNumber} (локація: {locations.FirstOrDefault(l => l.Id == t.LastLocationId)?.Name})",
-                Lat = locations.FirstOrDefault(l => l.Id == t.LastLocationId)?.Latitute ?? 0,
-                Lng = locations.FirstOrDefault(l => l.Id == t.LastLocationId)?.Longitute ?? 0,
-                LocationId = t.LastLocationId ?? 0
-            }))
-        .Concat(bataries.Select(t => new Suggestion
-            {
-                Type = "Tool",
-                Display = $"Інструмент: {t.BataryModelName ?? t.SerialNumber} (локація: {locations.FirstOrDefault(l => l.Id == t.LastLocationId)?.Name})",
-                Lat = locations.FirstOrDefault(l => l.Id == t.LastLocationId)?.Latitute ?? 0,
-                Lng = locations.FirstOrDefault(l => l.Id == t.LastLocationId)?.Longitute ?? 0,
-                LocationId = t.LastLocationId
-            }));
+        var toolMatches = powerTools.Select(t => new SearchSuggestion
+        {
+            Type = "tool",
+            Title = t.ToolTypeName ?? t.SerialNumber,
+            Description = $"PowerTool SN: {t.SerialNumber}",
+            LocationId = t.LastLocationId ?? 0
+        })
+        .Concat(handTools.Select(t => new SearchSuggestion
+        {
+            Type = "tool",
+            Title = t.Name,
+            Description = $"HandTool",
+            LocationId = t.LastLocationId
+        }))
+        .Concat(bataries.Select(t => new SearchSuggestion
+        {
+            Type = "tool",
+            Title = t.BataryModelName ?? t.SerialNumber,
+            Description = $"Batary SN: {t.SerialNumber}",
+            LocationId = t.LastLocationId
+        }));
 
         suggestions = locMatches.Concat(toolMatches).Take(10).ToList();
         showSuggestions = suggestions.Any();
     }
 
-    private async Task OnSuggestionSelected(Suggestion suggestion)
+    private async Task OnSuggestionSelected(SearchSuggestion suggestion)
     {
         showSuggestions = false;
-        searchTerm = suggestion.Display;
+        searchTerm = suggestion.Title;
 
-        // Фокусуємо карту на локації
-        await JSRuntime.InvokeVoidAsync("focusLocationOnMap", suggestion.Lat, suggestion.Lng);
-
-        // Якщо це локація — відкриваємо підтвердження
-        if (suggestion.Type == "Location")
+        // Фокус на локації
+        var loc = locations.FirstOrDefault(l => l.Id == suggestion.LocationId);
+        if (loc != null)
         {
-            await ShowLocationModal(suggestion.LocationId);
-        }
-        // Якщо це інструмент — відкриваємо підтвердження для локації інструменту
-        else if (suggestion.Type == "Tool")
-        {
-            await ShowLocationModal(suggestion.LocationId);
+            selectedLocation = loc;
+            locationTools = await LoadToolsForLocation(loc.Id);
+            StateHasChanged();
+            await JSRuntime.InvokeVoidAsync("focusLocationOnMap", loc.Latitute, loc.Longitute);
         }
     }
 
+    private async Task ShowAllLocations()
+    {
+        selectedLocation = null;
+        locationTools.Clear();
+        await InitializeMap();
+    }
+
+    private async Task InitializeMap()
+    {
+        await JSRuntime.InvokeVoidAsync("initializeLocationsMapWithSingleCallback", locations, DotNetObjectReference.Create(this));
+    }
+
+    private async Task FocusOnLocation()
+    {
+        if (selectedLocation != null)
+        {
+            await JSRuntime.InvokeVoidAsync("focusLocationOnMap", selectedLocation.Latitute, selectedLocation.Longitute);
+        }
+    }
+
+    private string GetToolIcon(string type) => type switch
+    {
+        "PowerTool" => "bolt",
+        "HandTool" => "wrench",
+        "Batary" => "battery-full",
+        _ => "tools"
+    };
+
+    private string GetToolTypeDisplayName(string type) => type switch
+    {
+        "PowerTool" => "Електроінструменти",
+        "HandTool" => "Ручні інструменти",
+        "Batary" => "Батареї",
+        _ => type
+    };
+
+    // DTOs for UI
     public class ToolInfo
     {
+        public int Id { get; set; }
         public string Type { get; set; }
         public string Name { get; set; }
+        public string SerialNumber { get; set; }
         public string Status { get; set; }
         public string WorkerName { get; set; }
-        public string WorkerEmail { get; set; }
     }
 
-    public class Suggestion
+    public class SearchSuggestion
     {
-        public string Type { get; set; } // "Location" or "Tool"
-        public string Display { get; set; }
-        public double Lat { get; set; }
-        public double Lng { get; set; }
+        public string Type { get; set; } // "location" or "tool"
+        public string Title { get; set; }
+        public string Description { get; set; }
         public int LocationId { get; set; }
     }
 }

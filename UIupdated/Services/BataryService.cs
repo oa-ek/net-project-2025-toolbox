@@ -57,6 +57,7 @@ namespace UIinterface.Services
                 return _mapper.Map<List<BataryDto>>(tools);
             }
         }
+
         public async Task<List<BataryDto>> GetToolsAsync(string searchTerm, string sortColumn, bool sortAscending)
         {
             using (var scope = _serviceScopeFactory.CreateScope())
@@ -86,6 +87,20 @@ namespace UIinterface.Services
 
                 var tools = await query.ToListAsync();
                 return _mapper.Map<List<BataryDto>>(tools);
+            }
+        }
+        public async Task UpdateToolLocationAsync(int toolId, int locationId, int workerId)
+        {
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<TTContext>();
+                var tool = await context.Bataries.FindAsync(toolId);
+                if (tool != null)
+                {
+                    tool.LastLocationId = locationId;
+                    tool.LastWorkerId = workerId;
+                    await context.SaveChangesAsync();
+                }
             }
         }
 

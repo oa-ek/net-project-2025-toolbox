@@ -151,9 +151,21 @@ namespace UIinterface.Services
 
         public async Task<List<HandToolDto>> GetToolsByLocationAsync(int locationId)
         {
-            var all = await GetAllAsync();
-            return all.Where(t => t.LastLocationId == locationId).ToList();
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<TTContext>();
+                var tools = await context.HandTools
+                    .Include(ht => ht.ToolType)
+                    .Include(ht => ht.Brand)
+                    .Include(ht => ht.Condition)
+                    .Where(ht => ht.LastLocationId == locationId)
+                    .ToListAsync();
+
+                return _mapper.Map<List<HandToolDto>>(tools);
+            }
         }
+
+
 
         public async Task<List<HandToolDto>> SearchToolsAsync(string searchTerm)
         {
@@ -176,6 +188,20 @@ namespace UIinterface.Services
 
                 var tools = await query.ToListAsync();
                 return _mapper.Map<List<HandToolDto>>(tools);
+            }
+        }
+        public async Task UpdateToolLocationAsync(int toolId, int locationId, int workerId)
+        {
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<TTContext>();
+                var tool = await context.HandTools.FindAsync(toolId);
+                if (tool != null)
+                {
+                    tool.LastLocationId = locationId;
+                    tool.LastWorkerId = workerId;
+                    await context.SaveChangesAsync();
+                }
             }
         }
 

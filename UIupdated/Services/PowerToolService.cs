@@ -289,9 +289,22 @@ namespace UIinterface.Services
 
         public async Task<List<PowerToolDto>> GetToolsByLocationAsync(int locationId)
         {
-            var all = await GetAllAsync();
-            return all.Where(t => t.LastLocationId == locationId).ToList();
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<TTContext>();
+                var tools = await context.PowerTools
+                    .Include(pt => pt.ToolType)
+                    .Include(pt => pt.Condition)
+                    .Include(pt => pt.ToolModel)
+                    .Include(pt => pt.PowerSupplyType)
+                    .Where(pt => pt.LastLocationId == locationId)
+                    .ToListAsync();
+
+                return _mapper.Map<List<PowerToolDto>>(tools);
+            }
         }
+
+
 
 
         // Пошук по всіх PowerTool за ключовим словом (швидко для автопідказок)
@@ -335,6 +348,20 @@ namespace UIinterface.Services
                     .ToListAsync();
 
                 return _mapper.Map<List<PowerToolDto>>(tools);
+            }
+        }
+        public async Task UpdateToolLocationAsync(int toolId, int locationId, int workerId)
+        {
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<TTContext>();
+                var tool = await context.PowerTools.FindAsync(toolId);
+                if (tool != null)
+                {
+                    tool.LastLocationId = locationId;
+                    tool.LastWorkerId = workerId;
+                    await context.SaveChangesAsync();
+                }
             }
         }
 
