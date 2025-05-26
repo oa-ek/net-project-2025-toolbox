@@ -1,6 +1,8 @@
 ﻿@page "/bosses"
 @using Core.DTOs
 @using UIinterface.Services
+@using UIupdated.Services
+@inject IUserService UserService
 @inject BossService BossService
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
@@ -82,7 +84,23 @@
 
     private async Task DeleteBoss(int id)
     {
-        await BossService.DeleteAsync(id);
-        bosses = (await BossService.GetAllAsync()).ToList();
+        var boss = bosses.FirstOrDefault(b => b.Id == id);
+        if (boss != null)
+        {
+            // Зняти роль "Boss" з користувача
+            var user = await UserService.GetUserByEmailAsync(boss.Email);
+            if (user != null)
+            {
+                var roleRemoved = await UserService.RemoveRoleAsync(user.Id, "Boss");
+                if (!roleRemoved)
+                {
+                    Console.WriteLine($"⚠️ Не вдалося зняти роль 'Boss' з користувача {user.Email}.");
+                }
+            }
+
+            // Видалити боса
+            await BossService.DeleteAsync(id);
+            bosses = (await BossService.GetAllAsync()).ToList();
+        }
     }
 }

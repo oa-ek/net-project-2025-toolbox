@@ -116,6 +116,8 @@ namespace UIupdated
             builder.Services.AddScoped<ToolTypeService>();
 
             builder.Services.AddScoped<IUserService, UserService>(); // testing connect user and workers emails
+            builder.Services.AddScoped<UserService>();
+
 
 
             // [ДОДАНО] Репозиторії

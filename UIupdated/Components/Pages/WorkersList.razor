@@ -1,7 +1,10 @@
 ﻿@page "/workers"
 @using Core.DTOs
 @using UIinterface.Services
+@using UIupdated.Services
 @inject WorkerService WorkerService
+@inject IUserService UserService
+@inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 
@@ -54,7 +57,7 @@
                 Navigation.NavigateTo("/admin/people");
             }
         }
-        </div>
+    </div>
     }
 </div>
 
@@ -80,7 +83,45 @@
 
     private async Task DeleteWorker(int id)
     {
-        await WorkerService.DeleteAsync(id);
+        var worker = workers.FirstOrDefault(w => w.Id == id);
+        if (worker == null)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"Worker with id {id} not found.");
+            return;
+        }
+
+        var user = await UserService.GetUserByEmailAsync(worker.Email);
+        if (user != null)
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"User ID: {user.Id}");
+
+            var workerRole = await UserService.GetRoleByNameAsync("Worker");
+            if (workerRole != null)
+            {
+                await JSRuntime.InvokeVoidAsync("alert", $"Role ID: {workerRole.Id}");
+
+                var removed = await UserService.RemoveRoleByIdAsync(user.Id, workerRole.Id);
+                if (removed)
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", $"User with ID {user.Id} had role {workerRole.Id} removed.");
+                }
+                else
+                {
+                    await JSRuntime.InvokeVoidAsync("alert", $"Failed to remove role {workerRole.Id} from user {user.Id}.");
+                }
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("alert", $"Role 'Worker' not found.");
+            }
+        }
+        else
+        {
+            await JSRuntime.InvokeVoidAsync("alert", $"User with email {worker.Email} not found.");
+        }
+
+        await WorkerService.DeleteAsync(worker.Id);
         workers = (await WorkerService.GetAllAsync()).ToList();
+        StateHasChanged();
     }
 }

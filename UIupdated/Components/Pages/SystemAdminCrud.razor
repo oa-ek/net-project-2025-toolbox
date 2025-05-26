@@ -1,9 +1,11 @@
 ﻿@page "/systemadmins"
 @using Core.DTOs
 @using UIinterface.Services
+@using UIupdated.Services
 @inject SystemAdminService SystemAdminService
 @inject BossService BossService
 @inject NavigationManager Navigation
+@inject IUserService UserService
 @rendermode InteractiveServer
 
 <PageTitle>System Admins</PageTitle>
@@ -17,6 +19,12 @@
     }
     else
     {
+        @if (!string.IsNullOrEmpty(alertMessage))
+        {
+           @* <div class="alert @alertClass">
+                @alertMessage
+            </div>*@
+        }
         <table class="styled-table">
             <thead>
                 <tr>
@@ -72,8 +80,15 @@
             </div>
             <div class="form-group">
                 <label for="email">Email</label>
-                <InputText id="email" @bind-Value="systemAdmin.Email" class="form-control" />
+                <InputSelect id="email" @bind-Value="systemAdmin.Email" class="form-control">
+                    <option value="">Select user email</option>
+                    @foreach (var user in users.OrderBy(u => u.Email))
+                    {
+                        <option value="@user.Email">@user.Email</option>
+                    }
+                </InputSelect>
             </div>
+
             <div class="form-group">
                 <label for="phone">Phone</label>
                 <InputText id="phone" @bind-Value="systemAdmin.Phone" class="form-control" />
@@ -105,22 +120,68 @@
     private List<SystemAdminDto> systemAdmins = new();
     private SystemAdminDto systemAdmin = new();
     private List<BossDto> bosses = new();
+    private List<UserDto> users = new(); // Додано
     private bool isLoading = true;
     private bool isEditing = false;
     private bool isAdding = false;
+
+    private string? alertMessage;
+    private string alertClass = "alert-info";
+    @inject WorkerService WorkerService
 
     protected override async Task OnInitializedAsync()
     {
         systemAdmins = (await SystemAdminService.GetAllAsync()).ToList();
         bosses = (await BossService.GetAllAsync()).ToList();
+        users = (await UserService.GetAllUsersAsync()).ToList();
+
+        var workers = await WorkerService.GetAllAsync();
+        var allBosses = await BossService.GetAllAsync();
+        var admins = await SystemAdminService.GetAllAsync();
+
+        var occupiedEmails = new HashSet<string>(
+            workers.Select(w => w.Email)
+            .Concat(admins.Select(a => a.Email))
+            .Concat(allBosses.Select(b => b.Email)),
+            StringComparer.OrdinalIgnoreCase
+        );
+
+        users = users
+            .Where(u => string.IsNullOrEmpty(u.Email) || !occupiedEmails.Contains(u.Email))
+            .Where(u => u.Roles == null || u.Roles.Count == 0)
+            .ToList();
+
         isLoading = false;
     }
 
-    private void AddSystemAdmin()
+    private async Task RefreshAvailableUsersAsync()
+    {
+        var allUsers = await UserService.GetAllUsersAsync();
+        var workers = await WorkerService.GetAllAsync();
+        var admins = await SystemAdminService.GetAllAsync();
+        var allBosses = await BossService.GetAllAsync();
+
+        var occupiedEmails = new HashSet<string>(
+            workers.Select(w => w.Email)
+            .Concat(admins.Select(a => a.Email))
+            .Concat(allBosses.Select(b => b.Email)),
+            StringComparer.OrdinalIgnoreCase
+        );
+
+        users = allUsers
+            .Where(u =>
+                (u.Roles == null || u.Roles.Count == 0) ||
+                u.Email == systemAdmin.Email) // залишаємо email редагованого користувача
+            .Where(u => string.IsNullOrEmpty(u.Email) || !occupiedEmails.Contains(u.Email) || u.Email == systemAdmin.Email)
+            .ToList();
+    }
+    private async Task AddSystemAdmin()
     {
         systemAdmin = new SystemAdminDto();
         isAdding = true;
         isEditing = false;
+
+        await RefreshAvailableUsersAsync(); // 🔁 Оновлення комбобокса
     }
 
     private async Task EditSystemAdmin(int id)
@@ -128,6 +189,7 @@
         systemAdmin = await SystemAdminService.GetByIdAsync(id);
         isEditing = true;
         isAdding = false;
+        await RefreshAvailableUsersAsync(); // 🔁 Оновлення комбобокса
     }
 
     private async Task SaveSystemAdmin()
@@ -135,22 +197,86 @@
         if (isEditing)
         {
             await SystemAdminService.UpdateAsync(systemAdmin.Id, systemAdmin);
+            alertMessage = $"🔄 System Admin з ID {systemAdmin.Id} оновлено.";
+            alertClass = "alert-warning";
         }
         else if (isAdding)
         {
             await SystemAdminService.AddAsync(systemAdmin);
+            alertClass = "alert-success";
+            alertMessage = $"✅ Додано System Admin з email: {systemAdmin.Email}.";
+
+            // 🧩 Отримай користувача
+            var user = await UserService.GetUserByEmailAsync(systemAdmin.Email);
+            if (user != null)
+            {
+                var userId = user.Id;
+                var roleId = 1; // Admin = 1
+
+                alertMessage += $"\n👤 Id юзера: {userId}";
+                alertMessage += $"\n🆔 Id адміна: {systemAdmin.Id}";
+                alertMessage += $"\n🛡️ Id ролі: {roleId}";
+
+                var result = await UserService.AssignRoleAdminAsync(userId);
+                if (result)
+                {
+                    alertMessage += $"\n✅ Юзеру з id {userId} присвоєно роль з id {roleId}";
+                }
+                else
+                {
+                    alertClass = "alert-danger";
+                    alertMessage += $"\n❌ Не вдалося призначити роль.";
+                }
+            }
+            else
+            {
+                alertClass = "alert-danger";
+                alertMessage += "\n❌ Користувача з таким email не знайдено.";
+            }
         }
 
         systemAdmins = (await SystemAdminService.GetAllAsync()).ToList();
         isEditing = false;
         isAdding = false;
+        await RefreshAvailableUsersAsync(); // 🔁 Оновлення комбобокса
     }
+
 
     private async Task DeleteSystemAdmin(int id)
     {
-        await SystemAdminService.DeleteAsync(id);
-        systemAdmins = (await SystemAdminService.GetAllAsync()).ToList();
+        var adminToDelete = await SystemAdminService.GetByIdAsync(id);
+        if (adminToDelete != null)
+        {
+            // Отримати userId через email
+            var user = await UserService.GetUserByEmailAsync(adminToDelete.Email);
+
+            // Видалити SystemAdmin з бази
+            await SystemAdminService.DeleteAsync(id);
+            systemAdmins = (await SystemAdminService.GetAllAsync()).ToList();
+
+            alertClass = "alert-warning";
+            alertMessage = $"🗑️ System Admin із ID {id} видалено.";
+
+            if (user != null)
+            {
+                var userId = user.Id;
+
+                // Зняти роль "Admin" з користувача
+                var result = await UserService.RemoveRoleAsync(userId, "Admin");
+
+                alertMessage += result
+                    ? $"\n✅ Роль 'Admin' знято з юзера {userId}."
+                    : $"\n⚠️ Не вдалося зняти роль 'Admin' з юзера.";
+            }
+            else
+            {
+                alertMessage += "\n⚠️ Не знайдено користувача з таким email.";
+            }
+        }
+        await RefreshAvailableUsersAsync(); // 🔁 Оновлення комбобокса
     }
+
+
 
     private void Cancel()
     {

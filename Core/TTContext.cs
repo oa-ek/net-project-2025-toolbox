@@ -8,8 +8,6 @@ namespace Core
     {
         public TTContext(DbContextOptions<TTContext> options) : base(options)
         { }
-
-
         public DbSet<Brand> Brands { get; set; }
         public DbSet<ToolType> ToolTypes { get; set; }
         public DbSet<PowerSupplyType> PowerSupplyTypes { get; set; }
@@ -25,7 +23,28 @@ namespace Core
         public DbSet<Position> Positions { get; set; }
         public DbSet<Worker> Workers { get; set; }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
 
-       
+            modelBuilder.Entity<HandTool>()
+                .HasOne(ht => ht.LastWorker)
+                .WithMany()
+                .HasForeignKey(ht => ht.LastWorkerId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<PowerTool>()
+                .HasOne(pt => pt.LastWorker)
+                .WithMany()
+                .HasForeignKey(pt => pt.LastWorkerId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Batary>()
+                .HasOne(b => b.LastWorker)
+                .WithMany()
+                .HasForeignKey(b => b.LastWorkerId)
+                .OnDelete(DeleteBehavior.SetNull);
+        }
+
     }
 }
