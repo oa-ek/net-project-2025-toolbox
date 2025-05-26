@@ -35,5 +35,9 @@ namespace Core.DTOs
 
         public string BataryModelName { get; set; }
         public string ConditionName { get; set; }
+
+        // Додано для відстеження вибору
+        public bool IsSelected { get; set; } = false;
+        public string BrandName { get; set; } // ← якщо потрібно
     }
 }

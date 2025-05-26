@@ -88,6 +88,92 @@ function onMapClick(dotNetHelper) {
     });
 }
 
+window.initializeLocationsMapWithSingleCallback = function (locations, dotNetHelper) {
+    const mapElement = document.getElementById('map-multiple');
+    if (!mapElement) return;
+
+    if (window._leafletMap) {
+        window._leafletMap.remove();
+    }
+    window._leafletMap = L.map('map-multiple').setView([50.327925, 26.5119475], 6);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(window._leafletMap);
+
+    window._locationMarkers = [];
+
+    locations.forEach(function (loc) {
+        if (loc.latitute && loc.longitute) {
+            const marker = L.marker([loc.latitute, loc.longitute]).addTo(window._leafletMap)
+                .bindPopup(loc.name);
+            marker.on('click', function () {
+                if (dotNetHelper) {
+                    dotNetHelper.invokeMethodAsync('ShowLocationModal', loc.id);
+                }
+            });
+            window._locationMarkers.push({ id: loc.id, marker: marker, lat: loc.latitute, lng: loc.longitute });
+        }
+    });
+};
+
+window.focusLocationOnMap = function (lat, lng, zoom = 14) {
+    if (window._leafletMap) {
+        window._leafletMap.setView([lat, lng], zoom);
+    }
+};
+window.initializeLocationSelectionMap = function (locations, dotNetRef) {
+    const mapElement = document.getElementById('location-selection-map');
+    if (!mapElement) {
+        console.error('location-selection-map element not found');
+        return;
+    }
+
+    // Видаляємо попередню карту, якщо вона існує
+    if (window._locationSelectionMap) {
+        window._locationSelectionMap.remove();
+        window._locationSelectionMap = null;
+    }
+
+    // Створюємо нову карту
+    window._locationSelectionMap = L.map('location-selection-map').setView([50.327925, 26.5119475], 6);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(window._locationSelectionMap);
+
+    // Додаємо маркери для всіх локацій
+    locations.forEach(function (loc) {
+        if (loc.latitute && loc.longitute) {
+            const marker = L.marker([loc.latitute, loc.longitute]).addTo(window._locationSelectionMap)
+                .bindPopup(loc.name);
+            marker.on('click', function () {
+                if (dotNetRef) {
+                    dotNetRef.invokeMethodAsync('OnLocationSelectedFromMap', loc.id);
+                }
+            });
+        }
+    });
+};
+
+window.initializeLocationsMapWithSingleCallback = function (locations, dotNetHelper) {
+    var map = L.map('locations-view-map').setView([50.45, 30.52], 6); // Київ, наприклад
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+    // Додаємо маркери для локацій
+    locations.forEach(function (loc) {
+        L.marker([loc.latitute, loc.longitute]).addTo(map)
+            .bindPopup(loc.name);
+    });
+    // Збережіть map у window, якщо потрібно для подальших викликів
+    window._locationsMap = map;
+};
+
+
+
 // Експортуємо функції для використання в Blazor
 window.initializeLocationsMap = initializeLocationsMap;
 window.initializeMap = initializeMap;

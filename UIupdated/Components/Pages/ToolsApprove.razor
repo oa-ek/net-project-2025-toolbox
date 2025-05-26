@@ -1,0 +1,491 @@
+﻿@page "/tools-management"
+@using Core.DTOs
+@using UIinterface.Services
+@inject PowerToolService PowerToolService
+@inject HandToolService HandToolService
+@inject BataryService BataryService
+@inject WorkerService WorkerService
+@inject LocationService LocationService
+@inject IJSRuntime JSRuntime
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<h3>Tool Management</h3>
+
+<!-- Вибір типу інструменту -->
+<div class="mb-3">
+    <label for="toolTypeSelect" class="form-label">Select Tool Type:</label>
+    <select id="toolTypeSelect" class="form-select" @onchange="OnToolTypeChanged">
+        <option value="">-- Select Type --</option>
+        <option value="HandTool">Hand Tool</option>
+        <option value="PowerTool">Power Tool</option>
+        <option value="Batary">Battery</option>
+    </select>
+</div>
+
+<!-- Пошук -->
+@if (!string.IsNullOrEmpty(selectedToolType))
+{
+    <div class="mb-3">
+        <input type="text" @bind="searchTerm" @bind:event="oninput" placeholder="Search tools..." class="form-control" />
+    </div>
+
+    <!-- Таблиця інструментів -->
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>
+                        <input type="checkbox" @onclick="ToggleSelectAll" />
+                    </th>
+                    <th>Name</th>
+                    <th>Model</th>
+                    <th>Condition</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (selectedToolType == "PowerTool")
+                {
+                    @foreach (var tool in filteredPowerTools)
+                    {
+                        <tr class="@(tool.IsSelected ? "table-primary" : "")">
+                            <td>
+                                <input type="checkbox" @bind="tool.IsSelected" />
+                            </td>
+                            <td>@tool.ToolTypeName</td>
+                            <td>@tool.ToolModelName</td>
+                            <td>@tool.ConditionName</td>
+                            <td>
+                                <span class="badge bg-@(tool.LastWorkerId.HasValue ? "warning" : "success")">
+                                    @(tool.LastWorkerId.HasValue ? "В користуванні" : "Доступний")
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                }
+                else if (selectedToolType == "HandTool")
+                {
+                    @foreach (var tool in filteredHandTools)
+                    {
+                        <tr class="@(tool.IsSelected ? "table-primary" : "")">
+                            <td>
+                                <input type="checkbox" @bind="tool.IsSelected" />
+                            </td>
+                            <td>@tool.Name</td>
+                            <td>@tool.ToolTypeName</td>
+                            <td>-</td>
+                            <td>
+                                <span class="badge bg-@(tool.LastWorkerId.HasValue ? "warning" : "success")">
+                                    @(tool.LastWorkerId.HasValue ? "В користуванні" : "Доступний")
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                }
+                else if (selectedToolType == "Batary")
+                {
+                    @foreach (var tool in filteredBataries)
+                    {
+                        <tr class="@(tool.IsSelected ? "table-primary" : "")">
+                            <td>
+                                <input type="checkbox" @bind="tool.IsSelected" />
+                            </td>
+                            <td>@tool.BataryModelName</td>
+                            <td>@tool.SerialNumber</td>
+                            <td>@tool.ConditionName</td>
+                            <td>
+                                <span class="badge bg-@(tool.LastWorkerId.HasValue ? "warning" : "success")">
+                                    @(tool.LastWorkerId.HasValue ? "В користуванні" : "Доступний")
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Кнопка підтвердження вибору інструментів -->
+    <div class="mt-3">
+        <button class="btn btn-primary" @onclick="OpenConfirmToolsModal" disabled="@(!HasSelectedTools())">
+            Підтвердити вибір (@GetSelectedToolsCount() обрано)
+        </button>
+    </div>
+}
+
+<!-- Модальне вікно підтвердження інструментів -->
+@if (isConfirmToolsModalOpen)
+{
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Підтвердження отримання інструментів</h5>
+                    <button type="button" class="btn-close" @onclick="CloseConfirmToolsModal"></button>
+                </div>
+                <div class="modal-body">
+                    @if (currentWorker != null)
+                    {
+                        <p>
+                            Чи ви, <strong>@currentWorker.FirstName @currentWorker.LastName</strong>
+                            (<strong>@currentWorker.Email</strong>), справді хочете взяти ці інструменти:
+                        </p>
+                        <div class="alert alert-info">
+                            <h6>Обрані інструменти:</h6>
+                            <ul class="mb-0">
+                                @foreach (var tool in GetAllSelectedTools())
+                                {
+                                    <li>
+                                        <strong>@tool.Type:</strong> @tool.Name
+                                        @if (!string.IsNullOrEmpty(tool.Model))
+                                        {
+                                            <span class="text-muted">(@tool.Model)</span>
+                                        }
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger">
+                            Не вдалося знайти ваш профіль працівника. Зверніться до адміністратора.
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseConfirmToolsModal">Скасувати</button>
+                    <button type="button" class="btn btn-success" @onclick="ConfirmToolsSelection" disabled="@(currentWorker == null)">
+                        Так, підтверджую
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Модальне вікно вибору локації -->
+@if (isLocationModalOpen)
+{
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Оберіть локацію на карті</h5>
+                    <button type="button" class="btn-close" @onclick="CloseLocationModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Доступні локації:</h6>
+                            <div class="mb-3">
+                                <input type="text" @bind="locationSearchTerm" @bind:event="oninput"
+                                       class="form-control" placeholder="Пошук локацій..." />
+                            </div>
+                            <div class="list-group" style="max-height: 300px; overflow-y: auto;">
+                                @foreach (var location in GetFilteredLocations())
+                                {
+                                    <button type="button"
+                                            class="list-group-item list-group-item-action @(selectedLocationId == location.Id ? "active" : "")"
+                                            @onclick="() => SelectLocationFromList(location.Id)">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">@location.Name</h6>
+                                        </div>
+                                        <p class="mb-1">@location.Description</p>
+                                        <small>Координати: @location.Latitute.ToString("F4"), @location.Longitute.ToString("F4")</small>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div id="location-selection-map" style="height: 400px; width: 100%;"></div>
+                        </div>
+                    </div>
+                    @if (selectedLocationId > 0)
+                    {
+                        <div class="alert alert-success mt-3">
+                            <strong>Обрана локація:</strong> @locations.FirstOrDefault(l => l.Id == selectedLocationId)?.Name
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseLocationModal">Скасувати</button>
+                    <button type="button" class="btn btn-primary" @onclick="ConfirmLocationSelection"
+                            disabled="@(selectedLocationId == 0)">
+                        Підтвердити локацію
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Повідомлення про успішне завершення -->
+@if (showSuccessMessage)
+{
+    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+        <strong>Успішно!</strong> Інструменти призначені та локація обрана.
+        <button type="button" class="btn-close" @onclick="() => showSuccessMessage = false"></button>
+    </div>
+}
+
+@code {
+    private string selectedToolType = "";
+    private List<PowerToolDto> allPowerTools = new();
+    private List<HandToolDto> allHandTools = new();
+    private List<BataryDto> allBataries = new();
+
+    private List<PowerToolDto> filteredPowerTools = new();
+    private List<HandToolDto> filteredHandTools = new();
+    private List<BataryDto> filteredBataries = new();
+
+    private List<LocationDto> locations = new();
+    private string searchTerm = string.Empty;
+    private string locationSearchTerm = string.Empty;
+
+    private bool isConfirmToolsModalOpen = false;
+    private bool isLocationModalOpen = false;
+    private bool showSuccessMessage = false;
+
+    private int selectedLocationId = 0;
+    private WorkerDto currentWorker;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrentWorkerAsync();
+        await LoadAllToolsAsync();
+        await LoadLocationsAsync();
+    }
+
+    private async Task LoadCurrentWorkerAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var email = user.Identity?.Name;
+
+        if (!string.IsNullOrEmpty(email))
+        {
+            currentWorker = await WorkerService.GetWorkerByEmailAsync(email);
+        }
+    }
+
+    private async Task LoadAllToolsAsync()
+    {
+        allPowerTools = (await PowerToolService.GetAllAsync()).ToList();
+        allHandTools = (await HandToolService.GetAllAsync()).ToList();
+        allBataries = (await BataryService.GetAllAsync()).ToList();
+        // Не очищаємо вибір при завантаженні, щоб зберігати вибрані інструменти між типами
+    }
+
+    private async Task LoadLocationsAsync()
+    {
+        locations = (await LocationService.GetAllAsync()).ToList();
+    }
+
+    private void OnToolTypeChanged(ChangeEventArgs e)
+    {
+        selectedToolType = e.Value?.ToString() ?? "";
+        // Не очищаємо вибір при зміні типу!
+        FilterTools();
+    }
+
+    private void FilterTools()
+    {
+        if (selectedToolType == "PowerTool")
+        {
+            filteredPowerTools = string.IsNullOrWhiteSpace(searchTerm)
+                ? allPowerTools
+                : allPowerTools.Where(t =>
+                    (t.ToolTypeName ?? "").Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    (t.ToolModelName ?? "").Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    (t.SerialNumber ?? "").Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    (t.ConditionName ?? "").Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+                ).ToList();
+        }
+        else if (selectedToolType == "HandTool")
+        {
+            filteredHandTools = string.IsNullOrWhiteSpace(searchTerm)
+                ? allHandTools
+                : allHandTools.Where(t =>
+                    (t.Name ?? "").Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    (t.ToolTypeName ?? "").Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+                ).ToList();
+        }
+        else if (selectedToolType == "Batary")
+        {
+            filteredBataries = string.IsNullOrWhiteSpace(searchTerm)
+                ? allBataries
+                : allBataries.Where(b =>
+                    (b.BataryModelName ?? "").Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    (b.SerialNumber ?? "").Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    (b.ConditionName ?? "").Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+                ).ToList();
+        }
+        StateHasChanged();
+    }
+
+    private void ClearAllSelections()
+    {
+        foreach (var tool in allPowerTools) tool.IsSelected = false;
+        foreach (var tool in allHandTools) tool.IsSelected = false;
+        foreach (var tool in allBataries) tool.IsSelected = false;
+    }
+
+    private void ToggleSelectAll()
+    {
+        if (selectedToolType == "PowerTool")
+        {
+            var selectAll = !filteredPowerTools.All(t => t.IsSelected);
+            foreach (var tool in filteredPowerTools)
+            {
+                tool.IsSelected = selectAll;
+            }
+        }
+        else if (selectedToolType == "HandTool")
+        {
+            var selectAll = !filteredHandTools.All(t => t.IsSelected);
+            foreach (var tool in filteredHandTools)
+            {
+                tool.IsSelected = selectAll;
+            }
+        }
+        else if (selectedToolType == "Batary")
+        {
+            var selectAll = !filteredBataries.All(t => t.IsSelected);
+            foreach (var tool in filteredBataries)
+            {
+                tool.IsSelected = selectAll;
+            }
+        }
+    }
+
+    private bool HasSelectedTools()
+    {
+        return GetSelectedToolsCount() > 0;
+    }
+
+    private int GetSelectedToolsCount()
+    {
+        return (allPowerTools?.Count(t => t.IsSelected) ?? 0) +
+               (allHandTools?.Count(t => t.IsSelected) ?? 0) +
+               (allBataries?.Count(t => t.IsSelected) ?? 0);
+    }
+
+    private void OpenConfirmToolsModal()
+    {
+        if (HasSelectedTools())
+        {
+            isConfirmToolsModalOpen = true;
+        }
+    }
+
+    private void CloseConfirmToolsModal()
+    {
+        isConfirmToolsModalOpen = false;
+    }
+
+    private void ConfirmToolsSelection()
+    {
+        CloseConfirmToolsModal();
+        isLocationModalOpen = true;
+        StateHasChanged();
+    }
+
+    private async Task CloseLocationModal()
+    {
+        isLocationModalOpen = false;
+        selectedLocationId = 0;
+        await JSRuntime.InvokeVoidAsync("destroyLocationSelectionMap");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (isLocationModalOpen && locations.Any())
+        {
+            await Task.Delay(100); // Дати час модальному вікну відрендеритися
+            await JSRuntime.InvokeVoidAsync(
+                "initializeLocationSelectionMap",
+                locations,
+                DotNetObjectReference.Create(this)
+            );
+        }
+    }
+
+    [JSInvokable]
+    public void OnLocationSelectedFromMap(int locationId)
+    {
+        selectedLocationId = locationId;
+        StateHasChanged();
+    }
+
+    private void SelectLocationFromList(int locationId)
+    {
+        selectedLocationId = locationId;
+        // Фокусуємо карту на обраній локації
+        var location = locations.FirstOrDefault(l => l.Id == locationId);
+        if (location != null)
+        {
+            JSRuntime.InvokeVoidAsync("focusMapOnLocation", location.Latitute, location.Longitute);
+        }
+    }
+
+    private List<LocationDto> GetFilteredLocations()
+    {
+        if (string.IsNullOrWhiteSpace(locationSearchTerm))
+            return locations;
+
+        return locations.Where(l =>
+            l.Name.Contains(locationSearchTerm, StringComparison.OrdinalIgnoreCase) ||
+            l.Description.Contains(locationSearchTerm, StringComparison.OrdinalIgnoreCase)
+        ).ToList();
+    }
+
+    private async Task ConfirmLocationSelection()
+    {
+        if (selectedLocationId > 0 && currentWorker != null)
+        {
+            var selectedPowerToolIds = allPowerTools?.Where(t => t.IsSelected).Select(t => t.Id).ToList() ?? new List<int>();
+            var selectedHandToolIds = allHandTools?.Where(t => t.IsSelected).Select(t => t.Id).ToList() ?? new List<int>();
+            var selectedBataryIds = allBataries?.Where(t => t.IsSelected).Select(t => t.Id).ToList() ?? new List<int>();
+
+            try
+            {
+                // Призначаємо інструменти працівнику та встановлюємо локацію
+                if (selectedPowerToolIds.Any())
+                    await WorkerService.AssignToolsToWorkerAsync(currentWorker.Id, selectedPowerToolIds, "PowerTool", selectedLocationId);
+                if (selectedHandToolIds.Any())
+                    await WorkerService.AssignToolsToWorkerAsync(currentWorker.Id, selectedHandToolIds, "HandTool", selectedLocationId);
+                if (selectedBataryIds.Any())
+                    await WorkerService.AssignToolsToWorkerAsync(currentWorker.Id, selectedBataryIds, "Batary", selectedLocationId);
+
+                // Закриваємо модальне вікно та показуємо повідомлення про успіх
+                await CloseLocationModal();
+                showSuccessMessage = true;
+
+                // Оновлюємо дані та скидаємо форму
+                ClearAllSelections();
+                selectedToolType = "";
+                FilterTools();
+
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                // Тут можна додати обробку помилок
+                Console.WriteLine($"Error assigning tools: {ex.Message}");
+            }
+        }
+    }
+
+    private IEnumerable<(string Type, int Id, string Name, string Model)> GetAllSelectedTools()
+    {
+        foreach (var t in allPowerTools?.Where(t => t.IsSelected) ?? Enumerable.Empty<PowerToolDto>())
+            yield return ("PowerTool", t.Id, t.ToolTypeName, t.ToolModelName);
+        foreach (var t in allHandTools?.Where(t => t.IsSelected) ?? Enumerable.Empty<HandToolDto>())
+            yield return ("HandTool", t.Id, t.Name, t.ToolTypeName);
+        foreach (var t in allBataries?.Where(t => t.IsSelected) ?? Enumerable.Empty<BataryDto>())
+            yield return ("Batary", t.Id, t.BataryModelName, t.SerialNumber);
+    }
+}

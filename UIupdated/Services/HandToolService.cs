@@ -107,6 +107,104 @@ namespace UIinterface.Services
                 return _mapper.Map<HandToolDto>(handTool);
             }
         }
+
+        public async Task<List<HandToolDto>> GetToolsAsync(string searchTerm, string sortColumn, bool sortAscending)
+        {
+            var query = _repository.Context.HandTools
+                .Include(ht => ht.ToolType)
+                .Include(ht => ht.Condition)
+                .Include(ht => ht.Brand)
+                .AsQueryable();
+
+            // Фільтрація
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(ht =>
+                    ht.ToolType.Name.Contains(searchTerm) ||
+                    ht.Brand.Name.Contains(searchTerm) ||
+                    ht.Condition.Name.Contains(searchTerm));
+            }
+
+            // Сортування
+            query = sortColumn switch
+            {
+                "Name" => sortAscending ? query.OrderBy(ht => ht.ToolType.Name) : query.OrderByDescending(ht => ht.ToolType.Name),
+                "Brand" => sortAscending ? query.OrderBy(ht => ht.Brand.Name) : query.OrderByDescending(ht => ht.Brand.Name),
+                "Condition" => sortAscending ? query.OrderBy(ht => ht.Condition.Name) : query.OrderByDescending(ht => ht.Condition.Name),
+                _ => query.OrderBy(ht => ht.Id)
+            };
+
+            // Отримання даних
+            var tools = await query.ToListAsync();
+
+            // Мапінг у DTO
+            return tools.Select(ht => new HandToolDto
+            {
+                Id = ht.Id,
+                Name = ht.ToolType.Name,
+                BrandId = ht.Brand.Id,
+                ConditionId = ht.Condition.Id,
+                ToolTypeId = ht.ToolType.Id,
+                Price = ht.Price
+            }).ToList();
+        }
+
+        public async Task<List<HandToolDto>> GetToolsByLocationAsync(int locationId)
+        {
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<TTContext>();
+                var tools = await context.HandTools
+                    .Include(ht => ht.ToolType)
+                    .Include(ht => ht.Brand)
+                    .Include(ht => ht.Condition)
+                    .Where(ht => ht.LastLocationId == locationId)
+                    .ToListAsync();
+
+                return _mapper.Map<List<HandToolDto>>(tools);
+            }
+        }
+
+
+
+        public async Task<List<HandToolDto>> SearchToolsAsync(string searchTerm)
+        {
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<TTContext>();
+                var query = context.HandTools
+                    .Include(ht => ht.ToolType)
+                    .Include(ht => ht.Brand)
+                    .Include(ht => ht.Condition)
+                    .AsQueryable();
+
+                if (!string.IsNullOrWhiteSpace(searchTerm))
+                {
+                    query = query.Where(ht =>
+                        ht.ToolType.Name.Contains(searchTerm) ||
+                        ht.Brand.Name.Contains(searchTerm) ||
+                        ht.Condition.Name.Contains(searchTerm));
+                }
+
+                var tools = await query.ToListAsync();
+                return _mapper.Map<List<HandToolDto>>(tools);
+            }
+        }
+        public async Task UpdateToolLocationAsync(int toolId, int locationId, int workerId)
+        {
+            using (var scope = _serviceScopeFactory.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<TTContext>();
+                var tool = await context.HandTools.FindAsync(toolId);
+                if (tool != null)
+                {
+                    tool.LastLocationId = locationId;
+                    tool.LastWorkerId = workerId;
+                    await context.SaveChangesAsync();
+                }
+            }
+        }
+
     }
 }
 
