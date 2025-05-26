@@ -172,6 +172,59 @@ window.initializeLocationsMapWithSingleCallback = function (locations, dotNetHel
     window._locationsMap = map;
 };
 
+window.initializeLocationsMapWithTools = function (locations, powerTools, handTools, bataries, dotNetHelper) {
+    if (window._locationsMap) {
+        window._locationsMap.remove();
+        window._locationsMap = null;
+    }
+
+    const mapElement = document.getElementById('locations-view-map');
+    if (!mapElement) {
+        console.error('locations-view-map element not found');
+        return;
+    }
+
+    window._locationsMap = L.map('locations-view-map').setView([50.45, 30.52], 6);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(window._locationsMap);
+
+    // Додаємо маркери тільки для інструментів
+    function addToolMarker(tool, type, iconUrl) {
+        var locationId = tool.lastLocationId ?? tool.LastLocationId;
+        var loc = locations.find(l => l.id === locationId || l.Id === locationId);
+        if (loc && loc.latitute && loc.longitute) {
+            const marker = L.marker([loc.latitute, loc.longitute], {
+                icon: L.icon({ iconUrl: iconUrl, iconSize: [28, 28] })
+            })
+                .addTo(window._locationsMap)
+                .bindPopup(
+                    '<b>' + (tool.name || tool.toolTypeName || tool.bataryModelName || tool.Name || tool.ToolTypeName || tool.BataryModelName) + '</b><br/>' +
+                    'Тип: ' + type + '<br/>' +
+                    (tool.serialNumber || tool.SerialNumber ? 'SN: ' + (tool.serialNumber || tool.SerialNumber) + '<br/>' : '')
+                );
+
+            // При кліку на маркер інструменту викликаємо C#-метод
+            marker.on('click', function () {
+                if (dotNetHelper) {
+                    dotNetHelper.invokeMethodAsync('OnToolMarkerClicked', type, tool.id ?? tool.Id);
+                }
+            });
+        }
+    }
+
+    powerTools.forEach(function (tool) {
+        addToolMarker(tool, 'PowerTool', '/img/powertool.png');
+    });
+    handTools.forEach(function (tool) {
+        addToolMarker(tool, 'HandTool', '/img/handtool.png');
+    });
+    bataries.forEach(function (tool) {
+        addToolMarker(tool, 'Batary', '/img/batary.png');
+    });
+};
 
 
 // Експортуємо функції для використання в Blazor

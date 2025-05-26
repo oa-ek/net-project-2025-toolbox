@@ -10,6 +10,8 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin,Boss,Worker")]
 
 <h3>Tool Management</h3>
 
@@ -113,6 +115,12 @@
             Підтвердити вибір (@GetSelectedToolsCount() обрано)
         </button>
     </div>
+    <!---->
+    <div class="mt-4 text-end">
+        <button type="button" class="btn btn-primary" @onclick="GoLocationsMap">
+            Go to LocationsMap
+        </button>
+    </div>
 }
 
 <!-- Модальне вікно підтвердження інструментів -->
@@ -161,6 +169,7 @@
                         Так, підтверджую
                     </button>
                 </div>
+               
             </div>
         </div>
     </div>
@@ -217,11 +226,7 @@
                         Підтвердити локацію
                     </button>                    
                 </div>
-                <div class="mt-4 text-end">
-                    <button type="button" class="btn btn-primary" @onclick="GoLocationsMap">
-                        Go to LocationsMap
-                    </button>
-                </div>
+               
 
             </div>
         </div>

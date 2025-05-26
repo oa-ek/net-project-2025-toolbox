@@ -8,7 +8,8 @@
 @inject WorkerService WorkerService
 @inject IJSRuntime JSRuntime
 @rendermode InteractiveServer
-
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin,Boss,Worker")]
 <h3>Карта локацій та інструментів</h3>
 
 <!-- Панель пошуку -->
@@ -61,120 +62,50 @@
     </div>
 </div>
 
-<!-- Карта -->
-<div class="card">
-    <div class="card-body p-0">
-        @if (locations == null)
-        {
-            <div>
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Завантаження...</span>
-                </div>
-            </div>
-        }
-        else
-        {
-            <div id="locations-view-map" style="height: 500px; width: 100%;"></div>
-        }
+<!-- Карта на всю ширину екрану -->
+@if (locations == null)
+{
+    <div>
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Завантаження...</span>
+        </div>
     </div>
-</div>
+}
+else
+{
+    <div id="locations-view-map"
+         style="height: 500px; width: 100vw; margin-left: calc(-50vw + 50%);"></div>
+}
 
-<!-- Інформаційна панель -->
-@if (selectedLocation != null)
+<!-- Інформаційна панель інструменту -->
+@if (selectedTool != null)
 {
     <div class="card mt-4">
         <div class="card-header">
             <h5 class="mb-0">
-                <i class="fas fa-map-marker-alt text-primary"></i>
-                @selectedLocation.Name
+                <i class="fas fa-@(GetToolIcon(selectedTool.Type)) text-secondary"></i>
+                @selectedTool.Name
             </h5>
         </div>
         <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <p class="text-muted mb-2">@selectedLocation.Description</p>
-                    <p class="mb-1">
-                        <strong>Координати:</strong>
-                        @selectedLocation.Latitute.ToString("F6"), @selectedLocation.Longitute.ToString("F6")
-                    </p>
-                </div>
-                <div class="col-md-6 text-end">
-                    <button class="btn btn-outline-primary btn-sm" @onclick="FocusOnLocation">
-                        <i class="fas fa-crosshairs"></i> Показати на карті
-                    </button>
-                </div>
-            </div>
-
-            <hr />
-
-            <div class="row">
-                <div class="col-12">
-                    <h6>
-                        <i class="fas fa-tools text-secondary"></i>
-                        Інструменти на локації (@locationTools.Count)
-                        <button class="btn btn-sm btn-outline-secondary ms-2" @onclick="RefreshLocationTools">
-                            <i class="fas fa-refresh"></i> Оновити
-                        </button>
-                    </h6>
-
-                    @if (isLoadingTools)
-                    {
-                        <div class="d-flex justify-content-center py-3">
-                            <div class="spinner-border spinner-border-sm text-secondary" role="status">
-                                <span class="visually-hidden">Завантаження інструментів...</span>
-                            </div>
-                        </div>
-                    }
-                    else if (locationTools.Any())
-                    {
-                        <div class="row">
-                            @foreach (var toolGroup in locationTools.GroupBy(t => t.Type))
-                            {
-                                <div class="col-md-4 mb-3">
-                                    <div class="card border-0 bg-light">
-                                        <div class="card-body p-3">
-                                            <h6 class="card-title text-capitalize">
-                                                <i class="fas fa-@(GetToolIcon(toolGroup.Key))"></i>
-                                                @GetToolTypeDisplayName(toolGroup.Key) (@toolGroup.Count())
-                                            </h6>
-                                            @foreach (var tool in toolGroup)
-                                            {
-                                                <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-white rounded border">
-                                                    <div>
-                                                        <strong>@tool.Name</strong>
-                                                        @if (!string.IsNullOrEmpty(tool.SerialNumber))
-                                                        {
-                                                            <br />
-                                                            <small class="text-muted">SN: @tool.SerialNumber</small>
-                                                        }
-                                                    </div>
-                                                    <div class="text-end">
-                                                        <span class="badge bg-@(tool.Status == "В користуванні" ? "warning" : "success") mb-1">
-                                                            @tool.Status
-                                                        </span>
-                                                        @if (tool.Status == "В користуванні" && !string.IsNullOrEmpty(tool.WorkerName))
-                                                        {
-                                                            <br />
-                                                            <small class="text-muted">@tool.WorkerName</small>
-                                                        }
-                                                    </div>
-                                                </div>
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle"></i>
-                            На цій локації немає інструментів.
-                        </div>
-                    }
-                </div>
-            </div>
+            <p>
+                <strong>Тип:</strong> @GetToolTypeDisplayName(selectedTool.Type)
+                <br />
+                @if (!string.IsNullOrEmpty(selectedTool.SerialNumber))
+                {
+                    <strong>SN:</strong> @selectedTool.SerialNumber
+                    <br />
+                }
+                <strong>Статус:</strong>
+                <span class="badge bg-@(selectedTool.Status == "В користуванні" ? "warning" : "success")">
+                    @selectedTool.Status
+                </span>
+                @if (!string.IsNullOrEmpty(selectedTool.WorkerName))
+                {
+                    <br />
+                    <strong>Працівник:</strong> @selectedTool.WorkerName
+                }
+            </p>
         </div>
     </div>
 }
@@ -220,16 +151,17 @@
 
 @code {
     private List<LocationDto> locations = new();
-    private LocationDto selectedLocation;
-    private List<ToolInfo> locationTools = new();
-    private List<SearchSuggestion> suggestions = new();
     private List<PowerToolDto> allPowerTools = new();
     private List<HandToolDto> allHandTools = new();
     private List<BataryDto> allBataries = new();
+    private List<WorkerDto> allWorkers = new();
 
     private string searchTerm = "";
     private bool showSuggestions = false;
-    private bool isLoadingTools = false;
+    private List<SearchSuggestion> suggestions = new();
+
+    // Для панелі інструменту
+    private ToolInfo selectedTool;
 
     // Статистика
     private int totalTools = 0;
@@ -241,12 +173,18 @@
         await LoadLocationsAsync();
         await LoadAllToolsAsync();
         await CalculateStatistics();
+        await LoadAllWorkersAsync();
     }
     private async Task LoadAllToolsAsync()
     {
         allPowerTools = (await PowerToolService.GetAllAsync()).ToList();
         allHandTools = (await HandToolService.GetAllAsync()).ToList();
         allBataries = (await BataryService.GetAllAsync()).ToList();
+    }
+
+    private async Task LoadAllWorkersAsync()
+    {
+        allWorkers = (await WorkerService.GetAllAsync()).ToList();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -256,7 +194,6 @@
             await InitializeMap();
         }
     }
-
 
     private async Task LoadLocationsAsync()
     {
@@ -279,64 +216,12 @@
     private async Task RefreshMap()
     {
         await LoadLocationsAsync();
+        await LoadAllToolsAsync();
         await CalculateStatistics();
+        await LoadAllWorkersAsync();
+        selectedTool = null;
         StateHasChanged();
         await InitializeMap();
-    }
-
-    private async Task RefreshLocationTools()
-    {
-        if (selectedLocation != null)
-        {
-            isLoadingTools = true;
-            StateHasChanged();
-            locationTools = await LoadToolsForLocation(selectedLocation.Id);
-            isLoadingTools = false;
-            StateHasChanged();
-        }
-    }
-
-    private async Task<List<ToolInfo>> LoadToolsForLocation(int locationId)
-    {
-        var result = new List<ToolInfo>();
-        var powerTools = await PowerToolService.GetToolsByLocationAsync(locationId);
-        result.AddRange(powerTools.Select(t => new ToolInfo
-            {
-                Id = t.Id,
-                Type = "PowerTool",
-                Name = t.ToolTypeName ?? t.SerialNumber,
-                SerialNumber = t.SerialNumber,
-                Status = t.LastWorkerId.HasValue ? "В користуванні" : "Доступний",
-                WorkerName = t.LastWorkerId.HasValue ? GetWorkerNameSync(t.LastWorkerId.Value) : null
-            }));
-        var handTools = await HandToolService.GetToolsByLocationAsync(locationId);
-        result.AddRange(handTools.Select(t => new ToolInfo
-            {
-                Id = t.Id,
-                Type = "HandTool",
-                Name = t.Name,
-                SerialNumber = null,
-                Status = t.LastWorkerId.HasValue ? "В користуванні" : "Доступний",
-                WorkerName = t.LastWorkerId.HasValue ? GetWorkerNameSync(t.LastWorkerId.Value) : null
-            }));
-        var bataries = await BataryService.GetToolsByLocationAsync(locationId);
-        result.AddRange(bataries.Select(t => new ToolInfo
-            {
-                Id = t.Id,
-                Type = "Batary",
-                Name = t.BataryModelName ?? t.SerialNumber,
-                SerialNumber = t.SerialNumber,
-                Status = t.LastWorkerId.HasValue ? "В користуванні" : "Доступний",
-                WorkerName = t.LastWorkerId.HasValue ? GetWorkerNameSync(t.LastWorkerId.Value) : null
-            }));
-        return result;
-    }
-
-    private string GetWorkerNameSync(int workerId)
-    {
-        // Для асинхронного варіанту використовуйте кеш або попередньо завантажуйте воркерів
-        // Тут для простоти повертаємо "Працівник #id"
-        return $"Працівник #{workerId}";
     }
 
     private void ClearSearch()
@@ -344,6 +229,7 @@
         searchTerm = "";
         showSuggestions = false;
         suggestions.Clear();
+        selectedTool = null;
     }
 
     private async Task OnSearchChanged(ChangeEventArgs e)
@@ -408,35 +294,135 @@
         showSuggestions = false;
         searchTerm = suggestion.Title;
 
-        // Фокус на локації
-        var loc = locations.FirstOrDefault(l => l.Id == suggestion.LocationId);
-        if (loc != null)
+        // Якщо це інструмент — знайти і показати його
+        if (suggestion.Type == "tool")
         {
-            selectedLocation = loc;
-            locationTools = await LoadToolsForLocation(loc.Id);
+            ToolInfo toolInfo = null;
+            toolInfo = allPowerTools
+                .Where(t => t.SerialNumber == suggestion.Title || t.ToolTypeName == suggestion.Title)
+                .Select(t => new ToolInfo
+                    {
+                        Id = t.Id,
+                        Type = "PowerTool",
+                        Name = t.ToolTypeName ?? t.SerialNumber,
+                        SerialNumber = t.SerialNumber,
+                        Status = t.LastWorkerId.HasValue ? "В користуванні" : "Доступний",
+                        WorkerName = t.LastWorkerId.HasValue ? GetWorkerNameSync(t.LastWorkerId.Value) : null
+                    }).FirstOrDefault()
+                ?? allHandTools
+                .Where(t => t.Name == suggestion.Title)
+                .Select(t => new ToolInfo
+                    {
+                        Id = t.Id,
+                        Type = "HandTool",
+                        Name = t.Name,
+                        SerialNumber = null,
+                        Status = t.LastWorkerId.HasValue ? "В користуванні" : "Доступний",
+                        WorkerName = t.LastWorkerId.HasValue ? GetWorkerNameSync(t.LastWorkerId.Value) : null
+                    }).FirstOrDefault()
+                ?? allBataries
+                .Where(t => t.BataryModelName == suggestion.Title || t.SerialNumber == suggestion.Title)
+                .Select(t => new ToolInfo
+                    {
+                        Id = t.Id,
+                        Type = "Batary",
+                        Name = t.BataryModelName ?? t.SerialNumber,
+                        SerialNumber = t.SerialNumber,
+                        Status = t.LastWorkerId.HasValue ? "В користуванні" : "Доступний",
+                        WorkerName = t.LastWorkerId.HasValue ? GetWorkerNameSync(t.LastWorkerId.Value) : null
+                    }).FirstOrDefault();
+
+            selectedTool = toolInfo;
             StateHasChanged();
-            await JSRuntime.InvokeVoidAsync("focusLocationOnMap", loc.Latitute, loc.Longitute);
+        }
+        else
+        {
+            selectedTool = null;
         }
     }
 
     private async Task ShowAllLocations()
     {
-        selectedLocation = null;
-        locationTools.Clear();
+        selectedTool = null;
         await InitializeMap();
     }
 
     private async Task InitializeMap()
     {
-        await JSRuntime.InvokeVoidAsync("initializeLocationsMapWithSingleCallback", locations, DotNetObjectReference.Create(this));
+        await JSRuntime.InvokeVoidAsync(
+            "initializeLocationsMapWithTools",
+            locations,
+            allPowerTools,
+            allHandTools,
+            allBataries,
+            DotNetObjectReference.Create(this)
+        );
     }
 
-    private async Task FocusOnLocation()
+    [JSInvokable]
+    public async Task OnToolMarkerClicked(string type, int toolId)
     {
-        if (selectedLocation != null)
+        ToolInfo toolInfo = null;
+
+        switch (type)
         {
-            await JSRuntime.InvokeVoidAsync("focusLocationOnMap", selectedLocation.Latitute, selectedLocation.Longitute);
+            case "PowerTool":
+                var pt = allPowerTools.FirstOrDefault(t => t.Id == toolId);
+                if (pt != null)
+                {
+                    toolInfo = new ToolInfo
+                        {
+                            Id = pt.Id,
+                            Type = "PowerTool",
+                            Name = pt.ToolTypeName ?? pt.SerialNumber,
+                            SerialNumber = pt.SerialNumber,
+                            Status = pt.LastWorkerId.HasValue ? "В користуванні" : "Доступний",
+                            WorkerName = pt.LastWorkerId.HasValue ? GetWorkerNameSync(pt.LastWorkerId.Value) : null
+                        };
+                }
+                break;
+            case "HandTool":
+                var ht = allHandTools.FirstOrDefault(t => t.Id == toolId);
+                if (ht != null)
+                {
+                    toolInfo = new ToolInfo
+                        {
+                            Id = ht.Id,
+                            Type = "HandTool",
+                            Name = ht.Name,
+                            SerialNumber = null,
+                            Status = ht.LastWorkerId.HasValue ? "В користуванні" : "Доступний",
+                            WorkerName = ht.LastWorkerId.HasValue ? GetWorkerNameSync(ht.LastWorkerId.Value) : null
+                        };
+                }
+                break;
+            case "Batary":
+                var bt = allBataries.FirstOrDefault(t => t.Id == toolId);
+                if (bt != null)
+                {
+                    toolInfo = new ToolInfo
+                        {
+                            Id = bt.Id,
+                            Type = "Batary",
+                            Name = bt.BataryModelName ?? bt.SerialNumber,
+                            SerialNumber = bt.SerialNumber,
+                            Status = bt.LastWorkerId.HasValue ? "В користуванні" : "Доступний",
+                            WorkerName = bt.LastWorkerId.HasValue ? GetWorkerNameSync(bt.LastWorkerId.Value) : null
+                        };
+                }
+                break;
         }
+
+        selectedTool = toolInfo;
+        StateHasChanged();
+    }
+
+    private string GetWorkerNameSync(int workerId)
+    {
+        var worker = allWorkers.FirstOrDefault(w => w.Id == workerId);
+        if (worker != null)
+            return $"{worker.FirstName} {worker.LastName}";
+        return $"Працівник #{workerId}";
     }
 
     private string GetToolIcon(string type) => type switch
